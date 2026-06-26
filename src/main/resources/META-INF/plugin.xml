@@ -20,13 +20,13 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Subway Coders Left" anchor="left" icon="/icons/subway-coder.svg"
+        <toolWindow id="Subway Coders Left" anchor="left" icon="/icons/subway-coder-left.svg"
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
-        <toolWindow id="Subway Coders Right" anchor="right" icon="/icons/subway-coder.svg"
+        <toolWindow id="Subway Coders Right" anchor="right" icon="/icons/subway-coder-right.svg"
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
-        <toolWindow id="Subway Coders Top" anchor="top" icon="/icons/subway-coder.svg"
+        <toolWindow id="Subway Coders Top" anchor="top" icon="/icons/subway-coder-top.svg"
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
-        <toolWindow id="Subway Coders Bottom" anchor="bottom" icon="/icons/subway-coder.svg"
+        <toolWindow id="Subway Coders Bottom" anchor="bottom" icon="/icons/subway-coder-bottom.svg"
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
     </extensions>
 </idea-plugin>
