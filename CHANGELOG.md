@@ -6,7 +6,8 @@
 
 ### Added
 
-- Four independent JCEF players, one per screen edge (left / right / top / bottom).
-- Config-driven categories, each with multiple clips, plus a Shuffle action that re-reads the config.
-- YouTube embeds and direct video URLs; paste any URL to override the category.
-- Per-window category and sound, an "open in browser" action, and a config-file editor.
+- First release: looping "brain-rot" gameplay clips right inside your IDE.
+- Four independent players, one per screen edge (left / right / top / bottom), each with its own category and sound.
+- Config-driven categories with multiple clips; "Shuffle" picks another and re-reads your config.
+- Play YouTube embeds or direct video URLs — paste any URL to override the category.
+- "Open in browser" action and a built-in config-file editor.
