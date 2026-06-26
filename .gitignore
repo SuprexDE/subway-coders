@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ Platform plugin sandbox / verifier
+.intellijPlatform/
+
+# IDE / project local files
+out/
+*.iml
+.idea/shelf/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/httpRequests/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Local-only working notes (not part of the public repo)
+CLAUDE.md

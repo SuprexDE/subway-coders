@@ -1,0 +1,32 @@
+<idea-plugin>
+    <id>de.suprexdev.subwaycoders</id>
+    <name>Subway Coders</name>
+    <vendor email="mail@suprex.dev" url="https://suprex.dev">SuprexDE</vendor>
+
+    <description><![CDATA[Subway Coders plays looping <b>Subway Surfers</b>-style gameplay (and Minecraft
+      parkour/story, Temple Run and other "brain-rot" clips) in tool windows right inside your IDE
+      &mdash; so your subconscious stays maximally engaged while the rest of you reads code.
+      <ul>
+        <li>Four independent players, one per screen edge (left / right / top / bottom)</li>
+        <li>Clips render with JCEF &mdash; a YouTube link plays as an embed, any other URL as a looping video</li>
+        <li>Config-driven categories (Subway Surfers, Temple Run, Minecraft Parkour/Story, and more); each holds several clips and "Shuffle" picks another</li>
+        <li>Paste any YouTube or direct video URL to play your own clip</li>
+        <li>Per-window category and sound, plus "open in browser" and a config editor</li>
+      </ul>
+      <p><i>A parody/fun plugin. "Subway Surfers" is a trademark of SYBO Games &mdash;
+      this project is not affiliated with or endorsed by them.</i></p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Subway Coders Left" anchor="left" icon="/icons/subway-coder.svg"
+                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+        <toolWindow id="Subway Coders Right" anchor="right" icon="/icons/subway-coder.svg"
+                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+        <toolWindow id="Subway Coders Top" anchor="top" icon="/icons/subway-coder.svg"
+                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+        <toolWindow id="Subway Coders Bottom" anchor="bottom" icon="/icons/subway-coder.svg"
+                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+    </extensions>
+</idea-plugin>
