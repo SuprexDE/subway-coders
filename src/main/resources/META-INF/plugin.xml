@@ -11,7 +11,7 @@
         <li>Clips render with JCEF &mdash; a YouTube link plays as an embed, any other URL as a looping video</li>
         <li>Config-driven categories (Subway Surfers, Temple Run, Minecraft Parkour/Story, and more); each holds several clips and "Shuffle" picks another</li>
         <li>Paste any YouTube or direct video URL to play your own clip</li>
-        <li>Per-window category and sound, plus "open in browser" and a config editor</li>
+        <li>Per-window category, plus "open in browser" and a config editor in the options menu</li>
       </ul>
     ]]></description>
 

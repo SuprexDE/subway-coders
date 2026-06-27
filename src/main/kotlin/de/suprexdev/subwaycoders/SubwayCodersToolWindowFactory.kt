@@ -22,7 +22,7 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
         val preferred = DEFAULT_CATEGORY[toolWindow.id]
         val defaultCategory = preferred?.takeIf { it in categories } ?: categories.firstOrNull().orEmpty()
 
-        val panel = SubwayCodersPanel(project, toolWindow.id, defaultCategory, defaultMuted = !service.config.sound)
+        val panel = SubwayCodersPanel(project, toolWindow.id, defaultCategory)
         val content = ContentFactory.getInstance().createContent(panel, "", false)
         content.setDisposer(panel)
         toolWindow.contentManager.addContent(content)

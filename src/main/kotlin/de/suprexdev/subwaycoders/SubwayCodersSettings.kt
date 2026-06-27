@@ -14,7 +14,6 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
     class WindowConfig {
         var categoryName: String = ""
         var customUrl: String = ""
-        var muted: Boolean = true
         var controlsHidden: Boolean = false
     }
 
@@ -31,11 +30,10 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         state = loaded
     }
 
-    fun configFor(windowId: String, defaultCategory: String, defaultMuted: Boolean): WindowConfig =
+    fun configFor(windowId: String, defaultCategory: String): WindowConfig =
         state.windows.getOrPut(windowId) {
             WindowConfig().apply {
                 categoryName = defaultCategory
-                muted = defaultMuted
             }
         }
 
