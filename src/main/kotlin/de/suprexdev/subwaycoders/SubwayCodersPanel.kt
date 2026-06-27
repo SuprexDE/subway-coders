@@ -3,20 +3,23 @@ package de.suprexdev.subwaycoders
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ToggleAction
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
-import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
-import java.awt.FlowLayout
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
@@ -31,18 +34,15 @@ class SubwayCodersPanel(
     private val config = SubwayCodersSettings.instance.configFor(windowId, defaultCategory)
     private var browser: JBCefBrowser? = null
     private var currentClip: String? = null
-    private var updatingCombo = false
 
-    private val categoryCombo = ComboBox<String>()
-    private val urlField = JBTextField()
-    private var toolbar: JComponent? = null
+    private var actionToolbar: ActionToolbar? = null
 
     init {
         if (JBCefApp.isSupported()) {
             val created = JBCefBrowser()
             browser = created
-            val bar = buildToolbar()
-            toolbar = bar
+            ensureValidCategory()
+            val bar = buildToolbar().component
             bar.isVisible = !config.controlsHidden
             add(bar, BorderLayout.NORTH)
             add(created.component, BorderLayout.CENTER)
@@ -54,45 +54,18 @@ class SubwayCodersPanel(
 
     private fun categories() = VideoConfigService.instance.config.categories
 
-    private fun buildToolbar(): JComponent {
-        val bar = JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(6), JBUI.scale(4)))
+    private fun categoryNames() = categories().map { it.name }
 
-        populateCategories()
-        categoryCombo.addActionListener {
-            if (updatingCombo) return@addActionListener
-            (categoryCombo.selectedItem as? String)?.let { config.categoryName = it }
-            config.customUrl = ""
-            urlField.text = ""
-            reload()
+    private fun buildToolbar(): ActionToolbar {
+        val group = DefaultActionGroup().apply {
+            add(CategoryAction())
+            add(ShuffleAction())
+            add(OpenInBrowserAction())
         }
-
-        urlField.columns = 14
-        urlField.text = config.customUrl
-        urlField.emptyText.text = "or paste a video URL…"
-        urlField.toolTipText = "Paste any YouTube or direct video URL, then press Enter"
-        urlField.addActionListener {
-            config.customUrl = urlField.text.trim()
-            reload()
+        return ActionManager.getInstance().createActionToolbar(TOOLBAR_PLACE, group, true).also {
+            it.targetComponent = this
+            actionToolbar = it
         }
-
-        val shuffleButton = JButton("Shuffle").apply {
-            toolTipText = "Play another clip from this category and re-read the config"
-            addActionListener {
-                VideoConfigService.instance.reload()
-                populateCategories()
-                reload()
-            }
-        }
-        val openButton = JButton(AllIcons.General.Web).apply {
-            toolTipText = "Open the current clip in your browser"
-            addActionListener { currentClip?.let { BrowserUtil.browse(watchOrDirect(it)) } }
-        }
-
-        bar.add(categoryCombo)
-        bar.add(urlField)
-        bar.add(shuffleButton)
-        bar.add(openButton)
-        return bar
     }
 
     fun openConfig() = openConfigFile()
@@ -101,21 +74,54 @@ class SubwayCodersPanel(
 
     fun setControlsHidden(hidden: Boolean) {
         config.controlsHidden = hidden
-        toolbar?.let {
+        actionToolbar?.component?.let {
             it.isVisible = !hidden
             it.revalidate()
             it.repaint()
         }
     }
 
-    private fun populateCategories() {
-        updatingCombo = true
-        val names = categories().map { it.name }
-        categoryCombo.model = DefaultComboBoxModel(names.toTypedArray())
-        val selected = config.categoryName.takeIf { it in names } ?: names.firstOrNull().orEmpty()
-        categoryCombo.selectedItem = selected
-        config.categoryName = selected
-        updatingCombo = false
+    private fun selectCategory(name: String) {
+        config.categoryName = name
+        config.customUrl = ""
+        reload()
+        actionToolbar?.updateActionsImmediately()
+    }
+
+    private fun shuffle() {
+        VideoConfigService.instance.reload()
+        ensureValidCategory()
+        reload()
+        actionToolbar?.updateActionsImmediately()
+    }
+
+    private fun promptForUrl() {
+        val input = Messages.showInputDialog(
+            project,
+            "Paste a YouTube or direct video URL:",
+            "Play Video URL",
+            null,
+            config.customUrl,
+            null,
+        ) ?: return
+        config.customUrl = input.trim()
+        reload()
+        actionToolbar?.updateActionsImmediately()
+    }
+
+    private fun clearCustomUrl() {
+        config.customUrl = ""
+        reload()
+        actionToolbar?.updateActionsImmediately()
+    }
+
+    private fun hasCustomUrl() = config.customUrl.isNotBlank()
+
+    private fun ensureValidCategory() {
+        val names = categoryNames()
+        if (config.categoryName !in names) {
+            config.categoryName = names.firstOrNull().orEmpty()
+        }
     }
 
     private fun unsupportedLabel(): JComponent =
@@ -171,5 +177,66 @@ class SubwayCodersPanel(
     override fun dispose() {
         browser?.let { Disposer.dispose(it) }
         browser = null
+    }
+
+    /** Source picker: checkable categories plus the custom-URL entry, in one control. */
+    private inner class CategoryAction : ComboBoxAction() {
+        override fun createPopupActionGroup(button: JComponent): DefaultActionGroup =
+            DefaultActionGroup().apply {
+                for (name in categoryNames()) {
+                    add(object : ToggleAction(name) {
+                        override fun isSelected(e: AnActionEvent) =
+                            !hasCustomUrl() && config.categoryName == name
+
+                        override fun setSelected(e: AnActionEvent, state: Boolean) = selectCategory(name)
+
+                        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+                    })
+                }
+                addSeparator()
+                add(object : AnAction("Paste video URL…", null, AllIcons.Actions.MenuPaste) {
+                    override fun actionPerformed(e: AnActionEvent) = promptForUrl()
+                })
+                if (hasCustomUrl()) {
+                    add(object : AnAction("Clear custom URL", null, AllIcons.Actions.Cancel) {
+                        override fun actionPerformed(e: AnActionEvent) = clearCustomUrl()
+                    })
+                }
+            }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.text = if (hasCustomUrl()) "Custom URL" else config.categoryName.ifEmpty { "Category" }
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+    }
+
+    private inner class ShuffleAction : AnAction(
+        "Shuffle",
+        "Play another clip from this category and re-read the config",
+        AllIcons.Actions.Refresh,
+    ) {
+        override fun actionPerformed(e: AnActionEvent) = shuffle()
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+    }
+
+    private inner class OpenInBrowserAction : AnAction(
+        "Open in Browser",
+        "Open the current clip in your browser",
+        AllIcons.General.Web,
+    ) {
+        override fun actionPerformed(e: AnActionEvent) {
+            currentClip?.let { BrowserUtil.browse(watchOrDirect(it)) }
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = currentClip != null
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+    }
+
+    private companion object {
+        const val TOOLBAR_PLACE = "SubwayCodersToolbar"
     }
 }
