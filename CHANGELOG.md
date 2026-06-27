@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## 1.1.1 - 2026-06-27
-
 ### Changed
 
 - Lowered the minimum supported IDE to 2022.2 (build 222), down from 2026.1, by compiling to
