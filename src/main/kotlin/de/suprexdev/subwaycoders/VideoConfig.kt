@@ -1,5 +1,6 @@
 package de.suprexdev.subwaycoders
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.application.PathManager
@@ -15,7 +16,6 @@ data class ClipCategory(
 )
 
 data class VideoConfig(
-    val sound: Boolean = false,
     val categories: List<ClipCategory> = emptyList(),
 )
 
@@ -28,6 +28,7 @@ data class VideoConfig(
 class VideoConfigService {
 
     private val mapper = jacksonObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     private val log = logger<VideoConfigService>()
 
     val configFile: Path = Path.of(PathManager.getConfigPath(), "subway-coders", "categories.json")

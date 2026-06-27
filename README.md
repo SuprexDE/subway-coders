@@ -15,13 +15,14 @@ available, one per screen edge.
 ## Features
 
 - **Four independent players** — one tool window per edge: left, right, top, bottom
-- Each window remembers its own category and sound choice
+- Each window remembers its own category
 - **Config-driven categories** — every category can hold several clips; the window plays a random
   one and "Shuffle" picks another (default categories: Subway Surfers, Temple Run, Minecraft
   Parkour, Minecraft Story, GTA Ramps, Satisfying, Slime)
 - A clip can be a **YouTube link** or a **direct video URL** (e.g. WebM on your own server)
 - Paste any video URL into a window to override the category
-- **Muted by default**, per-window "Sound" toggle to turn audio on
+- Clips play **muted** so autoplay isn't blocked; use the player's own controls to unmute
+- Hide the toolbar per window via **Show Controls** in the tool window's options (gear) menu
 
 ## Configuring categories & clips
 
@@ -30,12 +31,12 @@ Categories and their clips are defined in JSON:
 - Bundled default: `src/main/resources/config/default-categories.json`
 - Your editable copy (created on first run): `<IDE config dir>/subway-coders/categories.json`
 
-Click **Config** in any player's toolbar to open that file, edit it, then click **Shuffle** to
-re-read it. Each clip is a URL — a YouTube link or a direct video file you host yourself:
+Open the tool window's options (gear) menu and click **Edit Config…** to open that file, edit it,
+then click **Shuffle** in the player's toolbar to re-read it. Each clip is a URL — a YouTube link
+or a direct video file you host yourself:
 
 ```json
 {
-  "sound": false,
   "categories": [
     { "name": "Minecraft Story", "clips": [
       "https://youtu.be/n_Dv4JMiwK8",
