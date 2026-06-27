@@ -1,6 +1,8 @@
 # Subway Coders Changelog
 
-## [Unreleased]
+## Unreleased
+
+## 1.1.0 - 2026-06-27
 
 ### Removed
 
@@ -12,7 +14,7 @@
   Category, Shuffle and Open-in-Browser.
 - Unknown fields in `categories.json` are now ignored instead of failing the whole config.
 
-## [1.0.0]
+## 1.0.0
 
 ### Added
 
