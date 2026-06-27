@@ -2,11 +2,6 @@
 
 ## Unreleased
 
-### Changed
-
-- Lowered the minimum supported IDE to 2022.2 (build 222), down from 2026.1, by compiling to
-  Java 17 bytecode so the plugin loads on the JBR 17 that IDEs before 2024.2 ship.
-
 ## 1.1.0 - 2026-06-27
 
 ### Removed
