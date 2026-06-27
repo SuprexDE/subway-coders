@@ -2,6 +2,12 @@
   <img src="branding/png/subway-coders-logo.png" alt="Subway Coders" width="520">
 </p>
 
+<p align="center">
+  <a href="https://plugins.jetbrains.com/plugin/32509"><img src="https://img.shields.io/jetbrains/plugin/v/32509?label=Marketplace&logo=jetbrains" alt="JetBrains Marketplace"></a>
+  <a href="https://plugins.jetbrains.com/plugin/32509"><img src="https://img.shields.io/jetbrains/plugin/d/32509?label=Downloads" alt="Downloads"></a>
+  <a href="https://plugins.jetbrains.com/plugin/32509"><img src="https://img.shields.io/jetbrains/plugin/r/rating/32509?label=Rating" alt="Rating"></a>
+</p>
+
 # Subway Coders 🏄
 
 A fun JetBrains/IntelliJ plugin that plays looping **Subway Surfers**-style gameplay (plus
@@ -45,6 +51,12 @@ or a direct video file you host yourself:
   ]
 }
 ```
+
+## Install from JetBrains Marketplace
+
+The easiest way: open *Settings → Plugins → Marketplace*, search for **Subway Coders** and click
+**Install** — or grab it directly from the
+[Marketplace page](https://plugins.jetbrains.com/plugin/32509).
 
 ## Run it (development)
 
