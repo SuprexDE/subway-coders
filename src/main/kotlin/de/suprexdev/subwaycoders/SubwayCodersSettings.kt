@@ -15,6 +15,7 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         var categoryName: String = ""
         var customUrl: String = ""
         var muted: Boolean = true
+        var controlsHidden: Boolean = false
     }
 
     class State {

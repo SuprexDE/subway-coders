@@ -1,5 +1,6 @@
 package de.suprexdev.subwaycoders
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -37,12 +38,16 @@ class SubwayCodersPanel(
     private val categoryCombo = ComboBox<String>()
     private val urlField = JBTextField()
     private val soundCheck = JBCheckBox("Sound")
+    private var toolbar: JComponent? = null
 
     init {
         if (JBCefApp.isSupported()) {
             val created = JBCefBrowser()
             browser = created
-            add(buildToolbar(), BorderLayout.NORTH)
+            val bar = buildToolbar()
+            toolbar = bar
+            bar.isVisible = !config.controlsHidden
+            add(bar, BorderLayout.NORTH)
             add(created.component, BorderLayout.CENTER)
             reload()
         } else {
@@ -88,13 +93,9 @@ class SubwayCodersPanel(
                 reload()
             }
         }
-        val openButton = JButton("↗").apply {
+        val openButton = JButton(AllIcons.General.Web).apply {
             toolTipText = "Open the current clip in your browser"
             addActionListener { currentClip?.let { BrowserUtil.browse(watchOrDirect(it)) } }
-        }
-        val configButton = JButton("Config").apply {
-            toolTipText = "Edit categories and clips"
-            addActionListener { openConfigFile() }
         }
 
         bar.add(categoryCombo)
@@ -102,8 +103,20 @@ class SubwayCodersPanel(
         bar.add(soundCheck)
         bar.add(shuffleButton)
         bar.add(openButton)
-        bar.add(configButton)
         return bar
+    }
+
+    fun openConfig() = openConfigFile()
+
+    fun areControlsHidden(): Boolean = config.controlsHidden
+
+    fun setControlsHidden(hidden: Boolean) {
+        config.controlsHidden = hidden
+        toolbar?.let {
+            it.isVisible = !hidden
+            it.revalidate()
+            it.repaint()
+        }
     }
 
     private fun populateCategories() {

@@ -1,5 +1,11 @@
 package de.suprexdev.subwaycoders
 
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -20,14 +26,29 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
         val content = ContentFactory.getInstance().createContent(panel, "", false)
         content.setDisposer(panel)
         toolWindow.contentManager.addContent(content)
+
+        val toggleControls = object : ToggleAction("Show Controls") {
+            override fun isSelected(e: AnActionEvent): Boolean = !panel.areControlsHidden()
+            override fun setSelected(e: AnActionEvent, state: Boolean) = panel.setControlsHidden(!state)
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+        }
+        val editConfig = object : AnAction("Edit Config…", "Edit categories and clips", AllIcons.General.Settings) {
+            override fun actionPerformed(e: AnActionEvent) = panel.openConfig()
+        }
+        val gearActions = DefaultActionGroup().apply {
+            add(toggleControls)
+            addSeparator()
+            add(editConfig)
+        }
+        toolWindow.setAdditionalGearActions(gearActions)
     }
 
     private companion object {
         val DEFAULT_CATEGORY = mapOf(
-            "Subway Coders Left" to "Minecraft Parkour",
-            "Subway Coders Right" to "Subway Surfers",
-            "Subway Coders Top" to "Temple Run",
-            "Subway Coders Bottom" to "Minecraft Story",
+            "Subway Coders (Left)" to "Minecraft Parkour",
+            "Subway Coders (Right)" to "Subway Surfers",
+            "Subway Coders (Top)" to "Temple Run",
+            "Subway Coders (Bottom)" to "Minecraft Story",
         )
     }
 }
