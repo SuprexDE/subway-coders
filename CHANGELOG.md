@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.0 - 2026-07-05
+
 ### Added
 
 - **Doomscroll mode** — a **Doomscroll (YouTube Shorts)** entry in the category selector that scrolls
