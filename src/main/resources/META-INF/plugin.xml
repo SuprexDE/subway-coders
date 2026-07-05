@@ -26,5 +26,6 @@
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
         <toolWindow id="Subway Coders (Bottom)" anchor="bottom" icon="/icons/subway-coder-bottom.svg"
                     factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+        <postStartupActivity implementation="de.suprexdev.subwaycoders.ClaudeNotifyStartup"/>
     </extensions>
 </idea-plugin>

@@ -21,6 +21,9 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
     class State {
         @XMap
         var windows: MutableMap<String, WindowConfig> = HashMap()
+
+        // Global (not per-window): snap back to the terminal when Claude Code needs attention.
+        var claudeFocusEnabled: Boolean = true
     }
 
     private var state = State()
@@ -30,6 +33,12 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
     override fun loadState(loaded: State) {
         state = loaded
     }
+
+    var claudeFocusEnabled: Boolean
+        get() = state.claudeFocusEnabled
+        set(value) {
+            state.claudeFocusEnabled = value
+        }
 
     fun configFor(windowId: String, defaultCategory: String): WindowConfig =
         state.windows.getOrPut(windowId) {

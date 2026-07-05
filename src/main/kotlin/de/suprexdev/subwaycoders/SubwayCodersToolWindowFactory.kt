@@ -32,11 +32,20 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
             override fun setSelected(e: AnActionEvent, state: Boolean) = panel.setControlsHidden(!state)
             override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
         }
+        // Global (shared by all four windows' gear menus): snap back to the terminal on Claude events.
+        val toggleClaudeFocus = object : ToggleAction("Focus Terminal on Claude Events") {
+            override fun isSelected(e: AnActionEvent): Boolean = SubwayCodersSettings.instance.claudeFocusEnabled
+            override fun setSelected(e: AnActionEvent, state: Boolean) {
+                SubwayCodersSettings.instance.claudeFocusEnabled = state
+            }
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+        }
         val editConfig = object : AnAction("Edit Config…", "Edit categories and clips", AllIcons.General.Settings) {
             override fun actionPerformed(e: AnActionEvent) = panel.openConfig()
         }
         val gearActions = DefaultActionGroup().apply {
             add(toggleControls)
+            add(toggleClaudeFocus)
             addSeparator()
             add(editConfig)
         }
