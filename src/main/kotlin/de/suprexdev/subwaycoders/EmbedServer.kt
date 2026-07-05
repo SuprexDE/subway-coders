@@ -47,7 +47,7 @@ class EmbedServer : Disposable {
                 return
             }
             val origin = "http://127.0.0.1:${exchange.localAddress.port}"
-            val body = embedPageHtml(id, params["mute"] != "0", origin).toByteArray(StandardCharsets.UTF_8)
+            val body = PlayerHtml.embedPage(id, params["mute"] != "0", origin).toByteArray(StandardCharsets.UTF_8)
             exchange.responseHeaders.add("Content-Type", "text/html; charset=utf-8")
             exchange.sendResponseHeaders(200, body.size.toLong())
             exchange.responseBody.use { it.write(body) }
@@ -65,16 +65,6 @@ class EmbedServer : Disposable {
         }?.toMap().orEmpty()
 
     private fun decode(s: String): String = URLDecoder.decode(s, StandardCharsets.UTF_8)
-
-    private fun embedPageHtml(videoId: String, muted: Boolean, origin: String): String =
-        """
-        <!DOCTYPE html><html><head><meta charset="utf-8">
-        <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
-        iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style></head>
-        <body><iframe src="${buildEmbedUrl(videoId, muted, origin)}"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></body></html>
-        """.trimIndent()
 
     @Synchronized
     override fun dispose() {
