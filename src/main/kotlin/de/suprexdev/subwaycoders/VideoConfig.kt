@@ -76,7 +76,7 @@ fun buildEmbedUrl(videoId: String, muted: Boolean, origin: String): String {
     return "https://www.youtube-nocookie.com/embed/$videoId" +
         "?autoplay=1&mute=$mute&loop=1&playlist=$videoId" +
         "&controls=1&modestbranding=1&rel=0&playsinline=1&fs=1" +
-        "&origin=$origin"
+        "&enablejsapi=1&origin=$origin"
 }
 
 fun buildWatchUrl(videoId: String): String =

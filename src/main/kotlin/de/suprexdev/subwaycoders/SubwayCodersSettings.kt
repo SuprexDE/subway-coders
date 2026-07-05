@@ -15,6 +15,7 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         var categoryName: String = ""
         var customUrl: String = ""
         var controlsHidden: Boolean = false
+        var doomscrollEnabled: Boolean = false
     }
 
     class State {

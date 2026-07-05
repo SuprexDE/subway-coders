@@ -2,6 +2,7 @@ package de.suprexdev.subwaycoders
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
+import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -11,15 +12,21 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
+import org.cef.network.CefCookie
 import java.awt.BorderLayout
+import java.util.Date
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
@@ -27,13 +34,15 @@ import kotlin.random.Random
 
 class SubwayCodersPanel(
     private val project: Project,
-    windowId: String,
+    private val windowId: String,
     defaultCategory: String,
 ) : JPanel(BorderLayout()), Disposable {
 
     private val config = SubwayCodersSettings.instance.configFor(windowId, defaultCategory)
     private var browser: JBCefBrowser? = null
     private var currentClip: String? = null
+    private var lastBright = JBColor.isBright()
+    private var lastVisible = true
 
     private var actionToolbar: ActionToolbar? = null
 
@@ -46,6 +55,33 @@ class SubwayCodersPanel(
             bar.isVisible = !config.controlsHidden
             add(bar, BorderLayout.NORTH)
             add(created.component, BorderLayout.CENTER)
+            // Re-theme the feed only when the IDE actually flips between light and dark (the LAF
+            // listener also fires for unrelated theme tweaks, which must not reset the feed).
+            ApplicationManager.getApplication().messageBus.connect(this)
+                .subscribe(
+                    LafManagerListener.TOPIC,
+                    LafManagerListener {
+                        val bright = JBColor.isBright()
+                        if (bright != lastBright) {
+                            lastBright = bright
+                            if (config.doomscrollEnabled) reload()
+                        }
+                    },
+                )
+            // stateChanged fires for every tool window, so match ours by id; isVisible is false both
+            // when it's collapsed and when another tab takes over its anchor.
+            project.messageBus.connect(this)
+                .subscribe(
+                    ToolWindowManagerListener.TOPIC,
+                    object : ToolWindowManagerListener {
+                        override fun stateChanged(manager: ToolWindowManager) {
+                            val visible = manager.getToolWindow(windowId)?.isVisible == true
+                            if (visible == lastVisible) return
+                            lastVisible = visible
+                            setPlaybackPaused(!visible)
+                        }
+                    },
+                )
             reload()
         } else {
             add(unsupportedLabel(), BorderLayout.CENTER)
@@ -84,6 +120,7 @@ class SubwayCodersPanel(
     private fun selectCategory(name: String) {
         config.categoryName = name
         config.customUrl = ""
+        config.doomscrollEnabled = false
         reload()
         actionToolbar?.updateActionsImmediately()
     }
@@ -105,12 +142,14 @@ class SubwayCodersPanel(
             null,
         ) ?: return
         config.customUrl = input.trim()
+        config.doomscrollEnabled = false
         reload()
         actionToolbar?.updateActionsImmediately()
     }
 
     private fun clearCustomUrl() {
         config.customUrl = ""
+        config.doomscrollEnabled = false
         reload()
         actionToolbar?.updateActionsImmediately()
     }
@@ -145,8 +184,38 @@ class SubwayCodersPanel(
         return if (id != null) buildWatchUrl(id) else clip
     }
 
+    private fun toggleDoomscroll(enabled: Boolean) {
+        config.doomscrollEnabled = enabled
+        // Doomscroll is its own source: drop any custom URL so the tri-state stays mutually exclusive.
+        if (enabled) config.customUrl = ""
+        reload()
+        actionToolbar?.updateActionsImmediately()
+    }
+
+    /**
+     * Mirrors the IDE's light/dark theme onto YouTube by writing its `PREF` cookie before the feed
+     * loads. `f6` is a bit field whose `0x400` bit is the dark theme; clearing it (`f6=0`) yields the
+     * light theme. Set on the embedded browser's own cookie store (a guest profile, so overwriting
+     * the whole `PREF` value is fine).
+     */
+    private fun applyYouTubeTheme() {
+        val manager = browser?.jbCefCookieManager?.cefCookieManager ?: return
+        val pref = if (JBColor.isBright()) "f6=0" else "f6=400"
+        val now = Date()
+        val expires = Date(System.currentTimeMillis() + 365L * 24 * 60 * 60 * 1000)
+        val cookie = CefCookie("PREF", pref, ".youtube.com", "/", false, false, now, now, true, expires)
+        runCatching { manager.setCookie("https://www.youtube.com", cookie) }
+    }
+
     private fun reload() {
         val b = browser ?: return
+        if (config.doomscrollEnabled) {
+            currentClip = null
+            applyYouTubeTheme()
+            // Top-level navigation to the real site, so no EmbedServer/origin workaround is needed.
+            b.loadURL(YOUTUBE_SHORTS_URL)
+            return
+        }
         val clip = pickClip()
         currentClip = clip
         if (clip == null) {
@@ -174,6 +243,26 @@ class SubwayCodersPanel(
         FileEditorManager.getInstance(project).openFile(file, true)
     }
 
+    /**
+     * `<video>` pages and the Doomscroll feed expose `<video>` elements directly; the YouTube embed
+     * is a cross-origin `<iframe>` driven via the IFrame Player API `postMessage` (needs
+     * `enablejsapi=1` on the embed URL).
+     */
+    private fun setPlaybackPaused(pause: Boolean) {
+        val b = browser ?: return
+        val method = if (pause) "pause" else "play"
+        val command = if (pause) "pauseVideo" else "playVideo"
+        val js =
+            """
+            document.querySelectorAll('video').forEach(function(v){ try{ v.$method(); }catch(e){} });
+            document.querySelectorAll('iframe').forEach(function(fr){
+                try{ fr.contentWindow.postMessage(
+                    JSON.stringify({event:'command',func:'$command',args:''}), '*'); }catch(e){}
+            });
+            """.trimIndent()
+        b.cefBrowser.executeJavaScript(js, b.cefBrowser.url ?: "", 0)
+    }
+
     override fun dispose() {
         browser?.let { Disposer.dispose(it) }
         browser = null
@@ -186,13 +275,19 @@ class SubwayCodersPanel(
                 for (name in categoryNames()) {
                     add(object : ToggleAction(name) {
                         override fun isSelected(e: AnActionEvent) =
-                            !hasCustomUrl() && config.categoryName == name
+                            !config.doomscrollEnabled && !hasCustomUrl() && config.categoryName == name
 
                         override fun setSelected(e: AnActionEvent, state: Boolean) = selectCategory(name)
 
                         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
                     })
                 }
+                addSeparator()
+                add(object : ToggleAction("Doomscroll (YouTube Shorts)", null, AllIcons.Actions.Download) {
+                    override fun isSelected(e: AnActionEvent) = config.doomscrollEnabled
+                    override fun setSelected(e: AnActionEvent, state: Boolean) = toggleDoomscroll(state)
+                    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+                })
                 addSeparator()
                 add(object : AnAction("Paste video URL…", null, AllIcons.Actions.MenuPaste) {
                     override fun actionPerformed(e: AnActionEvent) = promptForUrl()
@@ -205,7 +300,11 @@ class SubwayCodersPanel(
             }
 
         override fun update(e: AnActionEvent) {
-            e.presentation.text = if (hasCustomUrl()) "Custom URL" else config.categoryName.ifEmpty { "Category" }
+            e.presentation.text = when {
+                config.doomscrollEnabled -> "Doomscroll"
+                hasCustomUrl() -> "Custom URL"
+                else -> config.categoryName.ifEmpty { "Category" }
+            }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -217,6 +316,11 @@ class SubwayCodersPanel(
         AllIcons.Actions.Refresh,
     ) {
         override fun actionPerformed(e: AnActionEvent) = shuffle()
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isVisible = !config.doomscrollEnabled
+        }
+
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
     }
 
@@ -226,11 +330,12 @@ class SubwayCodersPanel(
         AllIcons.General.Web,
     ) {
         override fun actionPerformed(e: AnActionEvent) {
-            currentClip?.let { BrowserUtil.browse(watchOrDirect(it)) }
+            if (config.doomscrollEnabled) BrowserUtil.browse(YOUTUBE_SHORTS_URL)
+            else currentClip?.let { BrowserUtil.browse(watchOrDirect(it)) }
         }
 
         override fun update(e: AnActionEvent) {
-            e.presentation.isEnabled = currentClip != null
+            e.presentation.isEnabled = config.doomscrollEnabled || currentClip != null
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -238,5 +343,8 @@ class SubwayCodersPanel(
 
     private companion object {
         const val TOOLBAR_PLACE = "SubwayCodersToolbar"
+
+        /** The real YouTube Shorts feed; loaded as a top-level page (no EmbedServer/origin needed). */
+        const val YOUTUBE_SHORTS_URL = "https://www.youtube.com/shorts"
     }
 }

@@ -27,6 +27,10 @@ available, one per screen edge.
   Parkour, Minecraft Story, GTA Ramps, Satisfying, Slime)
 - A clip can be a **YouTube link** or a **direct video URL** (e.g. WebM on your own server)
 - Paste any video URL into a window to override the category
+- **Doomscroll mode** — pick **Doomscroll (YouTube Shorts)** from the category selector to switch a
+  window to the endless **YouTube Shorts** feed (`youtube.com/shorts`) that you scroll yourself. No
+  API keys, no curated list — it just loads the real feed in the embedded browser. The feed follows
+  your **IDE light/dark theme** automatically
 - Clips play **muted** so autoplay isn't blocked; use the player's own controls to unmute
 - Hide the toolbar per window via **Show Controls** in the tool window's options (gear) menu
 
