@@ -10,40 +10,41 @@
 
 # Subway Coders 🏄
 
-A fun JetBrains/IntelliJ plugin that plays looping **Subway Surfers**-style gameplay (plus
-Minecraft parkour/story, Temple Run and other "brain-rot" clips) in tool windows inside your
-IDE, so your subconscious stays maximally engaged while you read code.
+A JetBrains/IntelliJ plugin that loops Subway Surfers-style gameplay in tool windows next to your
+code. Minecraft parkour and story clips, Temple Run, and the usual brain-rot are in there too. It's
+a joke that turned out to be genuinely nice to have running in the corner.
 
-Clips are rendered with **JCEF** (the Chromium browser bundled with the JetBrains Runtime) — a
-YouTube link plays as an embed, any other URL as a looping video. Four independent players are
-available, one per screen edge.
+Everything renders through JCEF, the Chromium browser that ships with the JetBrains Runtime. Drop in
+a YouTube link and it plays as an embed; any other URL loops as a plain video. There are four players,
+one docked to each edge of the IDE, and they run independently.
 
-## Features
+## What it does
 
-- **Four independent players** — one tool window per edge: left, right, top, bottom
-- Each window remembers its own category
-- **Config-driven categories** — every category can hold several clips; the window plays a random
-  one and "Shuffle" picks another (default categories: Subway Surfers, Temple Run, Minecraft
-  Parkour, Minecraft Story, GTA Ramps, Satisfying, Slime)
-- A clip can be a **YouTube link** or a **direct video URL** (e.g. WebM on your own server)
-- Paste any video URL into a window to override the category
-- **Doomscroll mode** — pick **Doomscroll (YouTube Shorts)** from the category selector to switch a
-  window to the endless **YouTube Shorts** feed (`youtube.com/shorts`) that you scroll yourself. No
-  API keys, no curated list — it just loads the real feed in the embedded browser. The feed follows
-  your **IDE light/dark theme** automatically
-- Clips play **muted** so autoplay isn't blocked; use the player's own controls to unmute
-- Hide the toolbar per window via **Show Controls** in the tool window's options (gear) menu
+- Four separate players, one per edge (left, right, top, bottom). Each remembers the category you left
+  it on.
+- Categories come from a JSON config. A category is just a list of clips; the window picks one at
+  random and **Shuffle** rolls again. Out of the box you get Subway Surfers, Temple Run, Minecraft
+  Parkour, Minecraft Story, GTA Ramps, Satisfying, and Slime.
+- Clips are URLs, so a YouTube link works and so does a direct video file (say, a WebM you host
+  yourself). Paste a URL straight into a window to override its category.
+- Feeling brave? Pick **Doomscroll (YouTube Shorts)** from the category dropdown and the window turns
+  into the actual `youtube.com/shorts` feed that you scroll by hand. No API keys, no curated list,
+  it just loads the real thing in the embedded browser and follows your IDE's light/dark theme.
+- Playback starts muted (otherwise autoplay gets blocked); unmute from the player's own controls if
+  you want sound. You can also hide the toolbar per window via **Show Controls** in the gear menu.
+- If you use Claude Code, the plugin hides the players and jumps focus to the built-in **Terminal**
+  whenever Claude asks something or wraps up, so you snap back out of the feed. It's on by default and
+  there's a toggle in the gear menu.
 
 ## Configuring categories & clips
 
-Categories and their clips are defined in JSON:
+Two files matter here. The defaults live in `src/main/resources/config/default-categories.json`, and
+on first run the plugin copies them to an editable version at
+`<IDE config dir>/subway-coders/categories.json`.
 
-- Bundled default: `src/main/resources/config/default-categories.json`
-- Your editable copy (created on first run): `<IDE config dir>/subway-coders/categories.json`
-
-Open the tool window's options (gear) menu and click **Edit Config…** to open that file, edit it,
-then click **Shuffle** in the player's toolbar to re-read it. Each clip is a URL — a YouTube link
-or a direct video file you host yourself:
+To change anything, open the gear menu and hit **Edit Config…** (that opens the editable copy). Save,
+then click **Shuffle** and the window re-reads the file. Every clip is just a URL, either a YouTube
+link or a video file you host somewhere:
 
 ```json
 {
@@ -58,21 +59,20 @@ or a direct video file you host yourself:
 
 ## Install from JetBrains Marketplace
 
-The easiest way: open *Settings → Plugins → Marketplace*, search for **Subway Coders** and click
-**Install** — or grab it directly from the
-[Marketplace page](https://plugins.jetbrains.com/plugin/32509).
+Go to *Settings → Plugins → Marketplace*, search for **Subway Coders**, and click **Install**. Or grab
+it straight from the [Marketplace page](https://plugins.jetbrains.com/plugin/32509) if you prefer.
 
 ## Run it (development)
 
-Requirements: JDK 21.
+You'll need JDK 21.
 
 ```bash
 ./gradlew runIde
 ```
 
-First run downloads the IntelliJ Platform SDK (a few hundred MB), then launches a sandbox IDE
-with the plugin installed. Open any of the **Subway Coders Left/Right/Top/Bottom** tool windows from
-the corresponding edge and pick a category.
+The first run pulls down the IntelliJ Platform SDK (a few hundred MB) and then spins up a sandbox IDE
+with the plugin loaded. Open any of the **Subway Coders Left/Right/Top/Bottom** tool windows from its
+edge and pick a category.
 
 ## Build an installable plugin zip
 
@@ -81,7 +81,7 @@ the corresponding edge and pick a category.
 # -> build/distributions/subway-jetbrains-extension-1.0.0.zip
 ```
 
-Install via *Settings → Plugins → ⚙ → Install Plugin from Disk…*
+Then install it through *Settings → Plugins → ⚙ → Install Plugin from Disk…*
 
 ## License
 
