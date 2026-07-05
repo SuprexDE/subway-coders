@@ -10,6 +10,10 @@
   IDE's light/dark theme (and live theme switches).
 - **Pause when hidden** — playback now pauses when a player's tool window is collapsed or another tab
   takes over its anchor, and resumes in place when it's shown again.
+- **Focus terminal on Claude Code events** — when Claude Code asks a question or finishes, the four
+  players are hidden and the built-in Terminal is focused so you snap back from the feed. Detection
+  uses Claude Code hooks that the plugin auto-installs into `~/.claude/settings.json` (removed again
+  when you turn the feature off). On by default; toggle it via the tool window's options (gear) menu.
 
 ## 1.1.0 - 2026-06-27
 
