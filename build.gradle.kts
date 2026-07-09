@@ -3,7 +3,7 @@ import org.jetbrains.changelog.Changelog
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.4.0"
-    id("org.jetbrains.intellij.platform") version "2.17.0"
+    id("org.jetbrains.intellij.platform") version "2.18.0"
     id("org.jetbrains.changelog") version "2.5.0"
 }
 
