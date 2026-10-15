@@ -25,5 +25,6 @@
         <toolWindow id="Subway Coders (Bottom)" anchor="bottom" icon="/icons/subway-coder-bottom.svg"
                     factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
         <postStartupActivity implementation="dev.suprex.subwaycoders.claude.ClaudeNotifyStartup"/>
+        <notificationGroup id="Subway Coders" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>
