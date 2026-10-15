@@ -14,18 +14,26 @@ object ClaudeHookInstaller {
     private val mapper = jacksonObjectMapper()
 
     private const val MARKER = "/claude-event"
-    private val EVENTS = listOf("Notification" to "notification", "Stop" to "stop")
+    private val EVENTS = mapOf(
+        "Notification" to "notification",
+        "Stop" to "stop",
+        "UserPromptSubmit" to "prompt",
+    )
 
     fun sync(enabled: Boolean) = if (enabled) install() else uninstall()
 
     private fun install() = edit { root ->
         val hooks = root.get("hooks") as? ObjectNode
             ?: mapper.createObjectNode().also { root.set<JsonNode>("hooks", it) }
-        var changed = false
+        var changed = hooks.fieldNames().asSequence().toList()
+            .filter { it !in EVENTS }
+            .map { strip(hooks, it) }
+            .any { it }
         for ((event, type) in EVENTS) {
-            val bucket = hooks.withArray(event)
-            if (bucket.any { group -> commandsOf(group).any { it.contains(MARKER) } }) continue
-            bucket.add(hookEntry(cmdFor(type)))
+            val entry = hookEntry(cmdFor(type))
+            if (hooks.withArray(event).filter(::isOurs) == listOf(entry)) continue
+            strip(hooks, event)
+            hooks.withArray(event).add(entry)
             changed = true
         }
         changed
@@ -33,16 +41,29 @@ object ClaudeHookInstaller {
 
     private fun uninstall() = edit { root ->
         val hooks = root.get("hooks") as? ObjectNode ?: return@edit false
-        var changed = false
-        for ((event, _) in EVENTS) {
-            val bucket = hooks.get(event) as? ArrayNode ?: continue
-            val kept = bucket.filterNot { group -> commandsOf(group).any { it.contains(MARKER) } }
-            if (kept.size == bucket.size()) continue
-            changed = true
-            if (kept.isEmpty()) hooks.remove(event) else bucket.apply { removeAll(); kept.forEach(::add) }
-        }
+        val changed = hooks.fieldNames().asSequence().toList().map { strip(hooks, it) }.any { it }
         if (hooks.isEmpty) root.remove("hooks")
         changed
+    }
+
+    private fun strip(hooks: ObjectNode, event: String): Boolean {
+        val bucket = hooks.get(event) as? ArrayNode ?: return false
+        var changed = false
+        val groups = bucket.toList()
+        bucket.removeAll()
+        for (group in groups) {
+            val commands = group.path("hooks") as? ArrayNode
+            val kept = commands?.filterNot { it.path("command").asText().contains(MARKER) }
+            if (commands != null && kept != null && kept.size != commands.size()) {
+                changed = true
+                if (kept.isEmpty()) continue
+                commands.removeAll()
+                kept.forEach(commands::add)
+            }
+            bucket.add(group)
+        }
+        if (bucket.isEmpty) hooks.remove(event)
+        return changed
     }
 
     @Synchronized
@@ -64,12 +85,14 @@ object ClaudeHookInstaller {
             .getOrNull()
     }
 
-    private fun commandsOf(group: JsonNode): List<String> =
-        group.path("hooks").mapNotNull { it.path("command").takeIf { c -> c.isTextual }?.asText() }
+    private fun isOurs(group: JsonNode): Boolean =
+        group.path("hooks").any { it.path("command").asText().contains(MARKER) }
 
     private fun hookEntry(command: String): ObjectNode =
         mapper.createObjectNode().apply {
-            withArray("hooks").add(mapper.createObjectNode().put("type", "command").put("command", command))
+            withArray("hooks").add(
+                mapper.createObjectNode().put("type", "command").put("command", command).put("async", true),
+            )
         }
 
     private fun cmdFor(type: String): String =

@@ -54,9 +54,13 @@ class PlayerController(
         if (config.doomscrollEnabled) reload()
     }
 
-    fun setPlaybackPaused(pause: Boolean) {
+    fun setPlaybackPaused(pause: Boolean) = runScript(PlayerHtml.pauseScript(pause))
+
+    fun fade(visible: Boolean, durationMs: Int) = runScript(PlayerHtml.fadeScript(visible, durationMs))
+
+    private fun runScript(script: String) {
         val b = browser ?: return
-        b.cefBrowser.executeJavaScript(PlayerHtml.pauseScript(pause), b.cefBrowser.url ?: "", 0)
+        b.cefBrowser.executeJavaScript(script, b.cefBrowser.url ?: "", 0)
     }
 
     fun externalUrl(): String? =
@@ -64,7 +68,9 @@ class PlayerController(
 
     fun reloadIfClipRemoved() {
         if (config.doomscrollEnabled || config.customUrl.isNotBlank()) return
-        if (currentClip !in categoryClips()) reload()
+        val clips = categoryClips()
+        val clip = currentClip
+        if (if (clip == null) clips.isNotEmpty() else clip !in clips) reload()
     }
 
     private fun categoryClips(): List<String> =

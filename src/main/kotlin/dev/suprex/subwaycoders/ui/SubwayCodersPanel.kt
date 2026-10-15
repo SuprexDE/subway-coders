@@ -19,9 +19,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.intellij.util.Alarm
+import dev.suprex.subwaycoders.claude.ClaudeFocus
 import dev.suprex.subwaycoders.config.SubwayCodersSettings
 import dev.suprex.subwaycoders.config.VideoConfigListener
 import dev.suprex.subwaycoders.config.VideoConfigService
@@ -40,6 +43,7 @@ class SubwayCodersPanel(
     private val config = SubwayCodersSettings.instance.configFor(windowId, defaultCategory)
     private val controller = PlayerController(config)
     private var lastVisible = true
+    private val fadeAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
 
     private var actionToolbar: ActionToolbar? = null
 
@@ -63,6 +67,10 @@ class SubwayCodersPanel(
                             if (visible == lastVisible) return
                             lastVisible = visible
                             controller.setPlaybackPaused(!visible)
+                            if (!visible) return
+                            fadeAlarm.cancelAllRequests()
+                            controller.fade(true, FADE_MS)
+                            ClaudeFocus.forget(project, windowId)
                         }
                     },
                 )
@@ -89,6 +97,20 @@ class SubwayCodersPanel(
     }
 
     fun openConfig() = openConfigFile()
+
+    fun hideAnimated() {
+        fadeAlarm.cancelAllRequests()
+        controller.fade(false, FADE_MS)
+        fadeAlarm.addRequest({ toolWindow()?.hide() }, FADE_MS)
+    }
+
+    fun reveal() {
+        fadeAlarm.cancelAllRequests()
+        val window = toolWindow() ?: return
+        if (window.isVisible) controller.fade(true, FADE_MS) else window.show(null)
+    }
+
+    private fun toolWindow() = ToolWindowManager.getInstance(project).getToolWindow(windowId)
 
     fun areControlsHidden(): Boolean = config.controlsHidden
 
@@ -251,7 +273,10 @@ class SubwayCodersPanel(
         override fun canClose(input: String?): Boolean = checkInput(input)
     }
 
-    private companion object {
-        const val TOOLBAR_PLACE = "SubwayCodersToolbar"
+    companion object {
+        val KEY = Key.create<SubwayCodersPanel>("SubwayCoders.panel")
+
+        private const val TOOLBAR_PLACE = "SubwayCodersToolbar"
+        private const val FADE_MS = 350
     }
 }

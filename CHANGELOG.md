@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- Saving `categories.json` now reloads the config automatically; players only switch clips when
+  theirs was removed.
+- A notification when Claude Code events can't be handled because another IDE window already uses
+  the port.
+- **Reopen after replying to Claude** — players hidden by a Claude Code event come back once you send
+  your next prompt, without stealing focus from the Terminal. Players you reopened or closed yourself
+  in the meantime and players that would cover the Terminal stay as they are. Can be turned off in the
+  gear menu.
+
+### Changed
+
+- Doomscroll uses a scroll icon instead of the download icon.
+- The category picker shows the custom URL as tooltip.
+- The Claude bridge retries the port on every project open instead of giving up after the first try.
+- Players fade out before being hidden on Claude Code events and fade back in when shown.
+
 ## 1.2.0 - 2026-07-05
 
 ### Added

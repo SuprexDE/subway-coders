@@ -9,7 +9,8 @@
         <li>Four independent players, one per screen edge</li>
         <li>Config-driven categories; YouTube links or direct video URLs</li>
         <li><b>Doomscroll mode</b> for the YouTube Shorts feed</li>
-        <li>Pauses when hidden; focuses the Terminal on Claude Code events</li>
+        <li>Pauses when hidden; fades out and focuses the Terminal while Claude Code waits for you,
+          and comes back when you reply</li>
       </ul>
     ]]></description>
 

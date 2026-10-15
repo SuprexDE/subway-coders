@@ -23,6 +23,8 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         var windows: MutableMap<String, WindowConfig> = HashMap()
 
         var claudeFocusEnabled: Boolean = true
+
+        var claudeReopenEnabled: Boolean = true
     }
 
     private var state = State()
@@ -37,6 +39,12 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         get() = state.claudeFocusEnabled
         set(value) {
             state.claudeFocusEnabled = value
+        }
+
+    var claudeReopenEnabled: Boolean
+        get() = state.claudeReopenEnabled
+        set(value) {
+            state.claudeReopenEnabled = value
         }
 
     fun configFor(windowId: String, defaultCategory: String): WindowConfig =

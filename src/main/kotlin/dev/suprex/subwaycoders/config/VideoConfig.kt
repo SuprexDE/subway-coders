@@ -56,8 +56,10 @@ class VideoConfigService : Disposable {
             object : BulkFileListener {
                 override fun after(events: List<VFileEvent>) {
                     if (events.none { FileUtil.pathsEqual(it.path, configPath) }) return
-                    reload()
-                    app.invokeLater { app.messageBus.syncPublisher(VideoConfigListener.TOPIC).configChanged() }
+                    app.executeOnPooledThread {
+                        reload()
+                        app.invokeLater { app.messageBus.syncPublisher(VideoConfigListener.TOPIC).configChanged() }
+                    }
                 }
             },
         )

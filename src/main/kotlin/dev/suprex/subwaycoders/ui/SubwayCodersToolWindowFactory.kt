@@ -32,6 +32,7 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
         val panel = SubwayCodersPanel(project, toolWindow.id, defaultCategory)
         val content = ContentFactory.getInstance().createContent(panel, "", false)
         content.setDisposer(panel)
+        content.putUserData(SubwayCodersPanel.KEY, panel)
         toolWindow.contentManager.addContent(content)
 
         val toggleControls = object : ToggleAction("Show Controls") {
@@ -50,12 +51,24 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
             }
             override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
         }
+        val toggleClaudeReopen = object : ToggleAction("Reopen After Replying to Claude") {
+            override fun isSelected(e: AnActionEvent): Boolean = SubwayCodersSettings.instance.claudeReopenEnabled
+            override fun setSelected(e: AnActionEvent, state: Boolean) {
+                SubwayCodersSettings.instance.claudeReopenEnabled = state
+            }
+            override fun update(e: AnActionEvent) {
+                super.update(e)
+                e.presentation.isEnabled = SubwayCodersSettings.instance.claudeFocusEnabled
+            }
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+        }
         val editConfig = object : AnAction("Edit Config…", "Edit categories and clips", AllIcons.General.Settings) {
             override fun actionPerformed(e: AnActionEvent) = panel.openConfig()
         }
         val gearActions = DefaultActionGroup().apply {
             add(toggleControls)
             add(toggleClaudeFocus)
+            add(toggleClaudeReopen)
             addSeparator()
             add(editConfig)
         }
@@ -74,14 +87,16 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
             .notify(project)
     }
 
-    private companion object {
-        const val NOTIFICATION_GROUP = "Subway Coders"
+    companion object {
+        private const val NOTIFICATION_GROUP = "Subway Coders"
 
-        val DEFAULT_CATEGORY = mapOf(
+        private val DEFAULT_CATEGORY = mapOf(
             "Subway Coders (Left)" to "Minecraft Parkour",
             "Subway Coders (Right)" to "Subway Surfers",
             "Subway Coders (Top)" to "Temple Run",
             "Subway Coders (Bottom)" to "Minecraft Story",
         )
+
+        val WINDOW_IDS: Set<String> = DEFAULT_CATEGORY.keys
     }
 }

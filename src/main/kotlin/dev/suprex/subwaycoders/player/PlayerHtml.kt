@@ -33,6 +33,14 @@ internal object PlayerHtml {
         allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></body></html>
         """.trimIndent()
 
+    fun fadeScript(visible: Boolean, durationMs: Int): String {
+        val opacity = if (visible) "1" else "0"
+        return """
+            (function(){ var s = document.documentElement.style;
+                s.transition = 'opacity ${durationMs}ms ease'; s.opacity = '$opacity'; })();
+        """.trimIndent()
+    }
+
     fun pauseScript(pause: Boolean): String {
         val method = if (pause) "pause" else "play"
         val command = if (pause) "pauseVideo" else "playVideo"
