@@ -1,10 +1,5 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.youtube
 
-/**
- * Builds the YouTube embed `<iframe>` src. [origin] must be the real http(s) origin of the page
- * hosting the iframe (see [EmbedServer]); YouTube validates it against the request's Referer/Origin
- * and refuses playback (error 152) for a missing or mismatched origin.
- */
 fun buildEmbedUrl(videoId: String, muted: Boolean, origin: String): String {
     val mute = if (muted) 1 else 0
     return "https://www.youtube-nocookie.com/embed/$videoId" +

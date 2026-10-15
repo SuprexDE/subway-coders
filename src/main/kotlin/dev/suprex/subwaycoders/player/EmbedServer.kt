@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.player
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -6,17 +6,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
+import dev.suprex.subwaycoders.youtube.extractVideoId
 import java.net.InetSocketAddress
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-/**
- * Serves a tiny wrapper page over `http://127.0.0.1` that embeds a YouTube clip in a real
- * cross-origin `<iframe>`. Since mid-2025 YouTube's player refuses to play unless it is loaded from
- * a page with a genuine http(s) origin that sends a matching Referer/Origin — a top-level `/embed/`
- * navigation or a JCEF `loadHTML` page (about:blank/opaque origin) is rejected with error 152.
- * Hosting the iframe on a loopback HTTP origin gives the player the embedding context it expects.
- */
 @Service(Service.Level.APP)
 class EmbedServer : Disposable {
 

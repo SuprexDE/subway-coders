@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.claude
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.openapi.Disposable
@@ -12,15 +12,6 @@ import com.sun.net.httpserver.HttpServer
 import java.net.BindException
 import java.net.InetSocketAddress
 
-/**
- * Loopback HTTP server that lets Claude Code hooks tell the IDE "Claude needs you". Claude runs in the
- * terminal where the IDE can't observe it, so [ClaudeHookInstaller] wires `Notification` and `Stop`
- * hooks that `curl` [PORT]`/claude-event?type=…`, forwarding the hook's stdin JSON (which carries
- * `cwd`) as the body. Each event hands off to [ClaudeFocus] to hide the players and focus the terminal.
- *
- * The port is fixed so the installed hook command stays a static, portable string. Only the first IDE
- * process to bind it owns Claude routing; later ones hit [BindException] and leave the feature inert.
- */
 @Service(Service.Level.APP)
 class ClaudeNotifyServer : Disposable {
 
@@ -31,7 +22,6 @@ class ClaudeNotifyServer : Disposable {
     private var server: HttpServer? = null
     private var attempted = false
 
-    /** @return the bound port, or null if the port is taken or the server failed to start. */
     @Synchronized
     fun ensureStarted(): Int? {
         server?.let { return PORT }
@@ -60,7 +50,6 @@ class ClaudeNotifyServer : Disposable {
             val cwd = runCatching {
                 mapper.readTree(exchange.requestBody).path("cwd").takeIf { it.isTextual }?.asText()
             }.getOrNull()
-            // Respond before the UI work so the hook's curl returns immediately, off the server thread.
             exchange.sendResponseHeaders(204, -1)
             ApplicationManager.getApplication().invokeLater({ ClaudeFocus.onEvent(type, cwd) }, ModalityState.any())
         } catch (t: Throwable) {

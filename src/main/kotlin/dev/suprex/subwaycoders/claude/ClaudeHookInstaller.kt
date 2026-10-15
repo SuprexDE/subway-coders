@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.claude
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -8,12 +8,6 @@ import com.intellij.openapi.diagnostic.logger
 import java.nio.file.Files
 import java.nio.file.Path
 
-/**
- * Keeps the Claude Code hooks that drive [ClaudeNotifyServer] in sync with the feature toggle. When
- * enabled, a `Notification` and a `Stop` command hook are merged into `~/.claude/settings.json`; when
- * disabled they are removed again. Edits are non-destructive (tree model, so unknown user settings
- * survive), idempotent (keyed off the `/claude-event` marker) and serialized against concurrent syncs.
- */
 object ClaudeHookInstaller {
 
     private val log = logger<ClaudeHookInstaller>()
@@ -51,7 +45,6 @@ object ClaudeHookInstaller {
         changed
     }
 
-    /** Reads settings.json, applies [mutate], and rewrites only if it reported a change. */
     @Synchronized
     private fun edit(mutate: (ObjectNode) -> Boolean) {
         val settings = Path.of(System.getProperty("user.home"), ".claude", "settings.json")
@@ -64,7 +57,6 @@ object ClaudeHookInstaller {
         }.onFailure { log.warn("Could not update Claude Code hooks at $settings", it) }
     }
 
-    /** Missing file → empty root; unparseable → null so we never clobber the user's file. */
     private fun readRoot(settings: Path): ObjectNode? {
         if (!Files.exists(settings)) return mapper.createObjectNode()
         return runCatching { mapper.readTree(Files.readString(settings)) as? ObjectNode }
@@ -80,9 +72,6 @@ object ClaudeHookInstaller {
             withArray("hooks").add(mapper.createObjectNode().put("type", "command").put("command", command))
         }
 
-    // Single query param → no `&` to escape, so one string works in both `sh` and `cmd.exe`.
-    // `-s -m 2` keeps it silent and fast so a stale hook (e.g. after uninstall) can't stall Claude.
-    // `--data-binary @-` forwards the hook's stdin JSON (with `cwd`) to the endpoint.
     private fun cmdFor(type: String): String =
         "curl -s -m 2 -X POST --data-binary @- \"http://127.0.0.1:${ClaudeNotifyServer.PORT}/claude-event?type=$type\""
 }

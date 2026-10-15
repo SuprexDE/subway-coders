@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.config
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -19,11 +19,6 @@ data class VideoConfig(
     val categories: List<ClipCategory> = emptyList(),
 )
 
-/**
- * Loads the category -> clips mapping. The bundled `default-categories.json` is the fallback; a
- * user copy at `<config>/subway-coders/categories.json` (created on first run) takes precedence and
- * is what users edit to define their own categories and clips.
- */
 @Service(Service.Level.APP)
 class VideoConfigService {
 

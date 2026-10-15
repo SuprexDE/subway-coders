@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.player
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
@@ -6,17 +6,16 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
+import dev.suprex.subwaycoders.config.SubwayCodersSettings
+import dev.suprex.subwaycoders.config.VideoConfigService
+import dev.suprex.subwaycoders.youtube.buildWatchUrl
+import dev.suprex.subwaycoders.youtube.extractVideoId
 import org.cef.network.CefCookie
 import java.util.Date
 import javax.swing.JComponent
 import javax.swing.SwingConstants
 import kotlin.random.Random
 
-/**
- * Owns the embedded [JBCefBrowser] and everything about *what* it renders: clip selection, the three
- * playback modes (category clip, custom URL, Doomscroll shorts), YouTube theming and pause/resume.
- * The Swing shell ([SubwayCodersPanel]) drives it via [reload] / [setPlaybackPaused].
- */
 class PlayerController(
     private val config: SubwayCodersSettings.WindowConfig,
 ) : Disposable {
@@ -34,7 +33,6 @@ class PlayerController(
         if (config.doomscrollEnabled) {
             currentClip = null
             applyYouTubeTheme()
-            // Top-level navigation to the real site, so no EmbedServer/origin workaround is needed.
             b.loadURL(YOUTUBE_SHORTS_URL)
             return
         }
@@ -45,12 +43,10 @@ class PlayerController(
             return
         }
         val id = extractVideoId(clip)
-        // Start muted so autoplay isn't blocked; the player controls let the user unmute.
         if (id != null) b.loadURL(EmbedServer.instance.pageUrl(id, muted = true))
         else b.loadHTML(PlayerHtml.videoPage(clip))
     }
 
-    /** Reloads the Doomscroll feed only when the IDE actually flipped light<->dark. */
     fun reloadIfThemeFlipped() {
         val bright = JBColor.isBright()
         if (bright == lastBright) return
@@ -63,7 +59,6 @@ class PlayerController(
         b.cefBrowser.executeJavaScript(PlayerHtml.pauseScript(pause), b.cefBrowser.url ?: "", 0)
     }
 
-    /** URL to open the current source in an external browser, or null if nothing is playable. */
     fun externalUrl(): String? =
         if (config.doomscrollEnabled) YOUTUBE_SHORTS_URL else currentClip?.let { watchOrDirect(it) }
 
@@ -80,12 +75,6 @@ class PlayerController(
         return if (id != null) buildWatchUrl(id) else clip
     }
 
-    /**
-     * Mirrors the IDE's light/dark theme onto YouTube by writing its `PREF` cookie before the feed
-     * loads. `f6` is a bit field whose `0x400` bit is the dark theme; clearing it (`f6=0`) yields the
-     * light theme. Set on the embedded browser's own cookie store (a guest profile, so overwriting
-     * the whole `PREF` value is fine).
-     */
     private fun applyYouTubeTheme() {
         val manager = browser?.jbCefCookieManager?.cefCookieManager ?: return
         val pref = if (JBColor.isBright()) "f6=0" else "f6=400"
@@ -109,7 +98,6 @@ class PlayerController(
     }
 
     private companion object {
-        /** The real YouTube Shorts feed; loaded as a top-level page (no EmbedServer/origin needed). */
         const val YOUTUBE_SHORTS_URL = "https://www.youtube.com/shorts"
     }
 }
