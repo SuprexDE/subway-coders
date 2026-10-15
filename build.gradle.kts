@@ -26,7 +26,6 @@ dependencies {
 }
 
 intellijPlatform {
-    // No .form files or @NotNull bytecode instrumentation in this plugin.
     instrumentCode = false
 
     pluginConfiguration {

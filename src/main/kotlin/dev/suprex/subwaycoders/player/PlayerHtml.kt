@@ -1,9 +1,9 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.player
 
-/** The HTML pages and control script rendered inside the embedded [JBCefBrowser] player. */
+import dev.suprex.subwaycoders.youtube.buildEmbedUrl
+
 internal object PlayerHtml {
 
-    /** A raw direct-video URL played as a fullscreen, looping, muted element. */
     fun videoPage(src: String): String =
         """
             <!DOCTYPE html><html><head><meta charset="utf-8">
@@ -12,13 +12,8 @@ internal object PlayerHtml {
             <body><video src="$src" autoplay loop muted controls playsinline></video></body></html>
         """.trimIndent()
 
-    /** Blank black page shown when a category has no clips. */
     fun blankPage(): String = "<html><body style='margin:0;background:#000'></body></html>"
 
-    /**
-     * Wrapper page hosting the YouTube clip in a real cross-origin `<iframe>` (see [EmbedServer]).
-     * [origin] must match the serving http(s) origin or the player refuses to play (error 152).
-     */
     fun embedPage(videoId: String, muted: Boolean, origin: String): String =
         """
         <!DOCTYPE html><html><head><meta charset="utf-8">
@@ -29,11 +24,6 @@ internal object PlayerHtml {
         allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></body></html>
         """.trimIndent()
 
-    /**
-     * Pauses or resumes playback across all modes: `<video>` pages and the Doomscroll feed expose
-     * `<video>` elements directly; the YouTube embed is a cross-origin `<iframe>` driven via the
-     * IFrame Player API `postMessage` (needs `enablejsapi=1` on the embed URL).
-     */
     fun pauseScript(pause: Boolean): String {
         val method = if (pause) "pause" else "play"
         val command = if (pause) "pauseVideo" else "playVideo"

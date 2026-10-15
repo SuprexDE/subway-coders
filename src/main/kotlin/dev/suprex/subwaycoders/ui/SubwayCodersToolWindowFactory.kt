@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -12,6 +12,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import dev.suprex.subwaycoders.claude.ClaudeHookInstaller
+import dev.suprex.subwaycoders.config.SubwayCodersSettings
+import dev.suprex.subwaycoders.config.VideoConfigService
 
 class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
 
@@ -33,12 +36,10 @@ class SubwayCodersToolWindowFactory : ToolWindowFactory, DumbAware {
             override fun setSelected(e: AnActionEvent, state: Boolean) = panel.setControlsHidden(!state)
             override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
         }
-        // Global (shared by all four windows' gear menus): snap back to the terminal on Claude events.
         val toggleClaudeFocus = object : ToggleAction("Focus Terminal on Claude Events") {
             override fun isSelected(e: AnActionEvent): Boolean = SubwayCodersSettings.instance.claudeFocusEnabled
             override fun setSelected(e: AnActionEvent, state: Boolean) {
                 SubwayCodersSettings.instance.claudeFocusEnabled = state
-                // Install/remove the Claude Code hooks off the EDT (settings.json IO).
                 ApplicationManager.getApplication().executeOnPooledThread { ClaudeHookInstaller.sync(state) }
             }
             override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT

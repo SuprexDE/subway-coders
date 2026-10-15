@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
@@ -20,6 +20,9 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import dev.suprex.subwaycoders.config.SubwayCodersSettings
+import dev.suprex.subwaycoders.config.VideoConfigService
+import dev.suprex.subwaycoders.player.PlayerController
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -44,12 +47,8 @@ class SubwayCodersPanel(
             bar.isVisible = !config.controlsHidden
             add(bar, BorderLayout.NORTH)
             add(controller.component, BorderLayout.CENTER)
-            // Re-theme the feed only when the IDE actually flips between light and dark (the LAF
-            // listener also fires for unrelated theme tweaks, which must not reset the feed).
             ApplicationManager.getApplication().messageBus.connect(this)
                 .subscribe(LafManagerListener.TOPIC, LafManagerListener { controller.reloadIfThemeFlipped() })
-            // stateChanged fires for every tool window, so match ours by id; isVisible is false both
-            // when it's collapsed and when another tab takes over its anchor.
             project.messageBus.connect(this)
                 .subscribe(
                     ToolWindowManagerListener.TOPIC,
@@ -145,7 +144,6 @@ class SubwayCodersPanel(
 
     private fun toggleDoomscroll(enabled: Boolean) {
         config.doomscrollEnabled = enabled
-        // Doomscroll is its own source: drop any custom URL so the tri-state stays mutually exclusive.
         if (enabled) config.customUrl = ""
         controller.reload()
         actionToolbar?.updateActionsAsync()
@@ -158,10 +156,8 @@ class SubwayCodersPanel(
         FileEditorManager.getInstance(project).openFile(file, true)
     }
 
-    // The browser is disposed via the controller registered as a Disposer child of this panel.
     override fun dispose() = Unit
 
-    /** Source picker: checkable categories plus the custom-URL entry, in one control. */
     private inner class CategoryAction : ComboBoxAction() {
         override fun createPopupActionGroup(button: JComponent): DefaultActionGroup =
             DefaultActionGroup().apply {

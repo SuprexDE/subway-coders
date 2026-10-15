@@ -1,4 +1,4 @@
-package de.suprexdev.subwaycoders
+package dev.suprex.subwaycoders.config
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -22,7 +22,6 @@ class SubwayCodersSettings : PersistentStateComponent<SubwayCodersSettings.State
         @XMap
         var windows: MutableMap<String, WindowConfig> = HashMap()
 
-        // Global (not per-window): snap back to the terminal when Claude Code needs attention.
         var claudeFocusEnabled: Boolean = true
     }
 

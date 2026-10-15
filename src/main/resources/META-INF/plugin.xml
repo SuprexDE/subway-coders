@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>de.suprexdev.subwaycoders</id>
+    <id>dev.suprex.subwaycoders</id>
     <name>Subway Coders</name>
     <vendor email="mail@suprex.dev" url="https://suprex.dev">SuprexDE</vendor>
 
@@ -24,13 +24,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Subway Coders (Left)" anchor="left" icon="/icons/subway-coder-left.svg"
-                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+                    factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
         <toolWindow id="Subway Coders (Right)" anchor="right" icon="/icons/subway-coder-right.svg"
-                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+                    factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
         <toolWindow id="Subway Coders (Top)" anchor="top" icon="/icons/subway-coder-top.svg"
-                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
+                    factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
         <toolWindow id="Subway Coders (Bottom)" anchor="bottom" icon="/icons/subway-coder-bottom.svg"
-                    factoryClass="de.suprexdev.subwaycoders.SubwayCodersToolWindowFactory"/>
-        <postStartupActivity implementation="de.suprexdev.subwaycoders.ClaudeNotifyStartup"/>
+                    factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
+        <postStartupActivity implementation="dev.suprex.subwaycoders.claude.ClaudeNotifyStartup"/>
     </extensions>
 </idea-plugin>
