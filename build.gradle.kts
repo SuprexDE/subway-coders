@@ -1,10 +1,9 @@
 import org.jetbrains.changelog.Changelog
 
 plugins {
-    id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.4.21"
-    id("org.jetbrains.intellij.platform") version "2.19.0"
-    id("org.jetbrains.changelog") version "2.5.0"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.intellijPlatform)
+    alias(libs.plugins.changelog)
 }
 
 val pluginVersion = providers.gradleProperty("pluginVersion")
@@ -27,6 +26,7 @@ dependencies {
 
 intellijPlatform {
     instrumentCode = false
+    buildSearchableOptions = false
 
     pluginConfiguration {
         ideaVersion {
@@ -64,6 +64,7 @@ intellijPlatform {
 
 changelog {
     groups.empty()
+    repositoryUrl = "https://github.com/SuprexDE/subway-coders"
 }
 
 kotlin {
