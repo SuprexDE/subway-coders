@@ -20,13 +20,10 @@ class ClaudeNotifyServer : Disposable {
 
     @Volatile
     private var server: HttpServer? = null
-    private var attempted = false
 
     @Synchronized
     fun ensureStarted(): Int? {
         server?.let { return PORT }
-        if (attempted) return null
-        attempted = true
         return try {
             HttpServer.create(InetSocketAddress("127.0.0.1", PORT), 0).apply {
                 createContext("/claude-event", ::handle)
@@ -36,7 +33,7 @@ class ClaudeNotifyServer : Disposable {
             log.info("Subway Coders Claude bridge listening on 127.0.0.1:$PORT")
             PORT
         } catch (e: BindException) {
-            log.info("Subway Coders Claude bridge port $PORT busy; another IDE handles Claude events", e)
+            log.info("Subway Coders Claude bridge port $PORT busy; another IDE handles Claude events")
             null
         } catch (t: Throwable) {
             log.warn("Failed to start Subway Coders Claude bridge", t)

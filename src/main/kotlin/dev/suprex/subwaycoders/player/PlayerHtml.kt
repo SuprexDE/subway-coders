@@ -1,5 +1,6 @@
 package dev.suprex.subwaycoders.player
 
+import com.intellij.openapi.util.text.StringUtil
 import dev.suprex.subwaycoders.youtube.buildEmbedUrl
 
 internal object PlayerHtml {
@@ -31,6 +32,28 @@ internal object PlayerHtml {
         <body><iframe src="${buildEmbedUrl(videoId, muted, origin)}"
         referrerpolicy="strict-origin-when-cross-origin"
         allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></body></html>
+        """.trimIndent()
+
+    private const val REMOVE_BANNER = "var old = document.getElementById('sc-banner'); if (old) old.remove();"
+
+    fun fadeScript(visible: Boolean, durationMs: Int): String {
+        val opacity = if (visible) "1" else "0"
+        val clear = if (visible) REMOVE_BANNER else ""
+        return """
+            (function(){ $clear var s = document.documentElement.style;
+                s.transition = 'opacity ${durationMs}ms ease'; s.opacity = '$opacity'; })();
+        """.trimIndent()
+    }
+
+    fun bannerScript(text: String): String =
+        """
+            (function(){ $REMOVE_BANNER
+                var b = document.createElement('div'); b.id = 'sc-banner';
+                b.textContent = "${StringUtil.escapeStringCharacters(text)}";
+                b.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483647;' +
+                    'padding:12px 22px;border-radius:999px;background:rgba(0,0,0,.78);color:#fff;' +
+                    'font:600 16px system-ui,sans-serif;box-shadow:0 4px 24px rgba(0,0,0,.5);pointer-events:none';
+                document.documentElement.appendChild(b); })();
         """.trimIndent()
 
     fun pauseScript(pause: Boolean): String {

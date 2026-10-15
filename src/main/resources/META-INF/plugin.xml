@@ -9,7 +9,9 @@
         <li>Four independent players, one per screen edge</li>
         <li>Config-driven categories; YouTube links or direct video URLs</li>
         <li><b>Doomscroll mode</b> for the YouTube Shorts feed</li>
-        <li>Pauses when hidden; focuses the Terminal on Claude Code events</li>
+        <li>Pauses when hidden; fades out and focuses the Terminal while Claude Code waits for you,
+          and comes back when you reply</li>
+        <li>Status bar widget with today's watch time</li>
       </ul>
     ]]></description>
 
@@ -25,5 +27,8 @@
         <toolWindow id="Subway Coders (Bottom)" anchor="bottom" icon="/icons/subway-coder-bottom.svg"
                     factoryClass="dev.suprex.subwaycoders.ui.SubwayCodersToolWindowFactory"/>
         <postStartupActivity implementation="dev.suprex.subwaycoders.claude.ClaudeNotifyStartup"/>
+        <notificationGroup id="Subway Coders" displayType="BALLOON"/>
+        <statusBarWidgetFactory id="SubwayCodersWatchTime"
+                                implementation="dev.suprex.subwaycoders.stats.WatchTimeWidgetFactory"/>
     </extensions>
 </idea-plugin>

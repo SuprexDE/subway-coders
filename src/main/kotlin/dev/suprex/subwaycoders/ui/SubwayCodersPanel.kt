@@ -19,12 +19,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.intellij.util.Alarm
+import dev.suprex.subwaycoders.claude.ClaudeFocus
 import dev.suprex.subwaycoders.config.SubwayCodersSettings
+import dev.suprex.subwaycoders.config.VideoConfigListener
 import dev.suprex.subwaycoders.config.VideoConfigService
 import dev.suprex.subwaycoders.player.PlayerController
+import dev.suprex.subwaycoders.stats.WatchTimeTracker
 import dev.suprex.subwaycoders.youtube.extractVideoId
 import java.awt.BorderLayout
 import javax.swing.JComponent
@@ -39,6 +44,8 @@ class SubwayCodersPanel(
     private val config = SubwayCodersSettings.instance.configFor(windowId, defaultCategory)
     private val controller = PlayerController(config)
     private var lastVisible = true
+    private val watchKey = "${project.locationHash}/$windowId"
+    private val fadeAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
 
     private var actionToolbar: ActionToolbar? = null
 
@@ -50,21 +57,22 @@ class SubwayCodersPanel(
             bar.isVisible = !config.controlsHidden
             add(bar, BorderLayout.NORTH)
             add(controller.component, BorderLayout.CENTER)
-            ApplicationManager.getApplication().messageBus.connect(this)
-                .subscribe(LafManagerListener.TOPIC, LafManagerListener { controller.reloadIfThemeFlipped() })
+            val appBus = ApplicationManager.getApplication().messageBus.connect(this)
+            appBus.subscribe(LafManagerListener.TOPIC, LafManagerListener { controller.reloadIfThemeFlipped() })
+            appBus.subscribe(VideoConfigListener.TOPIC, VideoConfigListener { onConfigChanged() })
             project.messageBus.connect(this)
                 .subscribe(
                     ToolWindowManagerListener.TOPIC,
                     object : ToolWindowManagerListener {
                         override fun stateChanged(manager: ToolWindowManager) {
                             val visible = manager.getToolWindow(windowId)?.isVisible == true
-                            if (visible == lastVisible) return
-                            lastVisible = visible
-                            controller.setPlaybackPaused(!visible)
+                            if (visible != lastVisible) onVisibilityChanged(visible)
                         }
                     },
                 )
             controller.reload()
+            lastVisible = toolWindow()?.isVisible == true
+            WatchTimeTracker.instance.setWatching(watchKey, lastVisible)
         } else {
             add(controller.component, BorderLayout.CENTER)
         }
@@ -87,6 +95,35 @@ class SubwayCodersPanel(
     }
 
     fun openConfig() = openConfigFile()
+
+    private fun onVisibilityChanged(visible: Boolean) {
+        lastVisible = visible
+        controller.setPlaybackPaused(!visible)
+        WatchTimeTracker.instance.setWatching(watchKey, visible)
+        if (!visible) return
+        fadeAlarm.cancelAllRequests()
+        controller.fade(true, FADE_MS)
+        ClaudeFocus.forget(project, windowId)
+    }
+
+    fun hideAnimated(banner: String) {
+        fadeAlarm.cancelAllRequests()
+        controller.showBanner(banner)
+        fadeAlarm.addRequest(::fadeOutAndHide, BANNER_MS)
+    }
+
+    private fun fadeOutAndHide() {
+        controller.fade(false, FADE_MS)
+        fadeAlarm.addRequest({ toolWindow()?.hide() }, FADE_MS)
+    }
+
+    fun reveal() {
+        fadeAlarm.cancelAllRequests()
+        val window = toolWindow() ?: return
+        if (window.isVisible) controller.fade(true, FADE_MS) else window.show(null)
+    }
+
+    private fun toolWindow() = ToolWindowManager.getInstance(project).getToolWindow(windowId)
 
     fun areControlsHidden(): Boolean = config.controlsHidden
 
@@ -111,6 +148,12 @@ class SubwayCodersPanel(
         VideoConfigService.instance.reload()
         ensureValidCategory()
         controller.reload()
+        actionToolbar?.updateActionsAsync()
+    }
+
+    private fun onConfigChanged() {
+        ensureValidCategory()
+        controller.reloadIfClipRemoved()
         actionToolbar?.updateActionsAsync()
     }
 
@@ -159,7 +202,7 @@ class SubwayCodersPanel(
         FileEditorManager.getInstance(project).openFile(file, true)
     }
 
-    override fun dispose() = Unit
+    override fun dispose() = WatchTimeTracker.instance.setWatching(watchKey, false)
 
     private inner class CategoryAction : ComboBoxAction() {
         override fun createPopupActionGroup(button: JComponent, dataContext: DataContext): DefaultActionGroup =
@@ -175,7 +218,7 @@ class SubwayCodersPanel(
                     })
                 }
                 addSeparator()
-                add(object : ToggleAction("Doomscroll (YouTube Shorts)", null, AllIcons.Actions.Download) {
+                add(object : ToggleAction("Doomscroll (YouTube Shorts)", null, AllIcons.Actions.MoveDown) {
                     override fun isSelected(e: AnActionEvent) = config.doomscrollEnabled
                     override fun setSelected(e: AnActionEvent, state: Boolean) = toggleDoomscroll(state)
                     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -197,6 +240,7 @@ class SubwayCodersPanel(
                 hasCustomUrl() -> "Custom URL"
                 else -> config.categoryName.ifEmpty { "Category" }
             }
+            e.presentation.description = config.customUrl.ifBlank { null }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -242,7 +286,11 @@ class SubwayCodersPanel(
         override fun canClose(input: String?): Boolean = checkInput(input)
     }
 
-    private companion object {
-        const val TOOLBAR_PLACE = "SubwayCodersToolbar"
+    companion object {
+        val KEY = Key.create<SubwayCodersPanel>("SubwayCoders.panel")
+
+        private const val TOOLBAR_PLACE = "SubwayCodersToolbar"
+        private const val FADE_MS = 350
+        private const val BANNER_MS = 1200
     }
 }
