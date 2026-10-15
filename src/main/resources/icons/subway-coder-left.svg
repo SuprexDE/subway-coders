@@ -1,18 +1,3 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g stroke="#6C707E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-    <g transform="translate(17.6,0) scale(-1,1)">
-      <circle cx="10" cy="3.3" r="1.5" fill="#6C707E" stroke="none"/>
-      <path d="M9.7 5.2 L7.6 9.1"/>
-      <path d="M9.2 5.9 L11.6 6.6 L12.4 5.1"/>
-      <path d="M9.2 5.9 L6.9 6.2 L6 7.8"/>
-      <path d="M7.6 9.1 L10.3 10 L9.7 13"/>
-      <path d="M7.6 9.1 L5.2 10.9 L6.6 13.2"/>
-    </g>
-    <path d="M3 5.4 L0.8 7.6 L3 9.8"/>
-    <g opacity="0.5">
-      <path d="M13.4 5 H15.4"/>
-      <path d="M13.6 8 H15.6"/>
-      <path d="M13.3 11 H15.2"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <path fill="#6C707E" d="M0 2h1v1h-1zM0 3h1v1h-1zM7 3h3v1h-3zM0 4h1v1h-1zM6 4h5v1h-5zM0 5h1v1h-1zM5 5h7v1h-7zM0 6h1v1h-1zM7 6h1v1h-1zM9 6h3v1h-3zM0 7h1v1h-1zM9 7h2v1h-2zM0 8h1v1h-1zM3 8h9v1h-9zM0 9h1v1h-1zM8 9h4v1h-4zM0 10h1v1h-1zM9 10h3v1h-3zM13 10h2v1h-2zM0 11h1v1h-1zM7 11h6v1h-6zM0 12h1v1h-1zM7 12h1v1h-1zM12 12h2v1h-2zM0 13h1v1h-1zM6 13h2v1h-2zM13 13h2v1h-2z"/>
 </svg>
