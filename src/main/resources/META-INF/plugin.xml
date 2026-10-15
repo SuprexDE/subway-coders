@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>dev.suprex.subwaycoders</id>
+    <id>de.suprexdev.subwaycoders</id>
     <name>Subway Coders</name>
     <vendor email="mail@suprex.dev" url="https://suprex.dev">SuprexDE</vendor>
 
