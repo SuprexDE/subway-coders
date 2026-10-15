@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-15
+
 ### Fixed
 
 - Startup crash (`NoClassDefFoundError: com/fasterxml/jackson/module/kotlin/ExtensionsKt`) on
@@ -68,7 +70,8 @@
 - Play YouTube embeds or direct video URLs — paste any URL to override the category.
 - "Open in browser" action and a built-in config-file editor.
 
-[Unreleased]: https://github.com/SuprexDE/subway-coders/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/SuprexDE/subway-coders/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/SuprexDE/subway-coders/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/SuprexDE/subway-coders/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/SuprexDE/subway-coders/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/SuprexDE/subway-coders/compare/v1.0.0...v1.1.0
