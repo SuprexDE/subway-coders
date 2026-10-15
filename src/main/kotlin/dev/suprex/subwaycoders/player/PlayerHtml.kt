@@ -9,10 +9,19 @@ internal object PlayerHtml {
             <!DOCTYPE html><html><head><meta charset="utf-8">
             <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
             video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}</style></head>
-            <body><video src="$src" autoplay loop muted controls playsinline></video></body></html>
+            <body><video src="${escapeAttr(src)}" autoplay loop muted controls playsinline></video></body></html>
         """.trimIndent()
 
-    fun blankPage(): String = "<html><body style='margin:0;background:#000'></body></html>"
+    fun emptyPage(): String =
+        """
+            <!DOCTYPE html><html><head><meta charset="utf-8">
+            <style>html,body{margin:0;height:100%;background:#000;color:#999;
+            font:13px system-ui,sans-serif;display:flex;align-items:center;justify-content:center;text-align:center}</style></head>
+            <body><div>No clips in this category.<br>Add some via the gear menu &gt; Edit Config.</div></body></html>
+        """.trimIndent()
+
+    private fun escapeAttr(s: String): String =
+        s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
     fun embedPage(videoId: String, muted: Boolean, origin: String): String =
         """

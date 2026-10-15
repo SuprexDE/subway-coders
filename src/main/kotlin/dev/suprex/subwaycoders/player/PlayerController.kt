@@ -39,7 +39,7 @@ class PlayerController(
         val clip = pickClip()
         currentClip = clip
         if (clip == null) {
-            b.loadHTML(PlayerHtml.blankPage())
+            b.loadHTML(PlayerHtml.emptyPage())
             return
         }
         val id = extractVideoId(clip)
@@ -67,7 +67,8 @@ class PlayerController(
         if (custom.isNotEmpty()) return custom
         val clips = VideoConfigService.instance.config.categories
             .firstOrNull { it.name == config.categoryName }?.clips.orEmpty()
-        return if (clips.isEmpty()) null else clips[Random.nextInt(clips.size)]
+        val candidates = clips.filter { it != currentClip }.ifEmpty { clips }
+        return if (candidates.isEmpty()) null else candidates[Random.nextInt(candidates.size)]
     }
 
     private fun watchOrDirect(clip: String): String {
