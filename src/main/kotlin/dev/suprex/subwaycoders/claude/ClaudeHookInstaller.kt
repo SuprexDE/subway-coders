@@ -1,9 +1,9 @@
 package dev.suprex.subwaycoders.claude
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.openapi.diagnostic.logger
 import java.nio.file.Files
 import java.nio.file.Path
@@ -11,7 +11,7 @@ import java.nio.file.Path
 object ClaudeHookInstaller {
 
     private val log = logger<ClaudeHookInstaller>()
-    private val mapper = jacksonObjectMapper()
+    private val mapper = ObjectMapper()
 
     private const val MARKER = "/claude-event"
     private val EVENTS = mapOf(

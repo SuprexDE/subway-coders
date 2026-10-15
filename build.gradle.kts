@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.jackson.databind)
+
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion"))
     }

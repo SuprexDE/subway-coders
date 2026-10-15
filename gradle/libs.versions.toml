@@ -2,6 +2,10 @@
 kotlin = "2.4.21"
 intellijPlatform = "2.19.0"
 changelog = "2.5.0"
+jackson = "2.22.1"
+
+[libraries]
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

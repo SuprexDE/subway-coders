@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Startup crash (`NoClassDefFoundError: com/fasterxml/jackson/module/kotlin/ExtensionsKt`) on
+  IntelliJ 2026.3, which no longer exposes its bundled Jackson Kotlin module to plugins. The plugin
+  now ships its own Jackson.
+
 ## [1.3.0] - 2026-10-15
 
 ### Added
