@@ -1,6 +1,6 @@
 package dev.suprex.subwaycoders.claude
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
@@ -16,7 +16,7 @@ import java.net.InetSocketAddress
 class ClaudeNotifyServer : Disposable {
 
     private val log = logger<ClaudeNotifyServer>()
-    private val mapper = jacksonObjectMapper()
+    private val mapper = ObjectMapper()
 
     @Volatile
     private var server: HttpServer? = null

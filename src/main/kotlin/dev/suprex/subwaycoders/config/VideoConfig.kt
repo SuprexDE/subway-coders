@@ -1,8 +1,7 @@
 package dev.suprex.subwaycoders.config
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.PathManager
@@ -38,8 +37,7 @@ fun interface VideoConfigListener {
 @Service(Service.Level.APP)
 class VideoConfigService : Disposable {
 
-    private val mapper = jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val mapper = ObjectMapper()
     private val log = logger<VideoConfigService>()
 
     val configFile: Path = Path.of(PathManager.getConfigPath(), "subway-coders", "categories.json")
@@ -84,9 +82,18 @@ class VideoConfigService : Disposable {
             ?: bundledJson()
 
     private fun parse(json: String?): VideoConfig =
-        json?.let { runCatching { mapper.readValue<VideoConfig>(it) }.getOrNull() }
+        json?.let { runCatching { toConfig(mapper.readTree(it)) }.getOrNull() }
             ?.takeIf { it.categories.isNotEmpty() }
             ?: VideoConfig()
+
+    private fun toConfig(root: JsonNode) = VideoConfig(
+        categories = root.path("categories").map { category ->
+            ClipCategory(
+                name = category.path("name").asText(""),
+                clips = category.path("clips").filter { it.isTextual }.map { it.asText() },
+            )
+        },
+    )
 
     private fun bundledJson(): String? =
         javaClass.getResourceAsStream("/config/default-categories.json")?.use { it.readBytes().decodeToString() }
