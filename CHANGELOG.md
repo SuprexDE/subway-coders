@@ -12,6 +12,9 @@
   your next prompt, without stealing focus from the Terminal. Players you reopened or closed yourself
   in the meantime and players that would cover the Terminal stay as they are. Can be turned off in the
   gear menu.
+- **Claude banner** — before fading out, players briefly show "Claude needs you" or "Claude is done".
+- **Watch time** — a status bar widget shows how long a player was visible today, with the all-time
+  total in its tooltip. Toggle it via the status bar's context menu.
 
 ### Changed
 

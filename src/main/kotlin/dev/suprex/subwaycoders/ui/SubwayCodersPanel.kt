@@ -29,6 +29,7 @@ import dev.suprex.subwaycoders.config.SubwayCodersSettings
 import dev.suprex.subwaycoders.config.VideoConfigListener
 import dev.suprex.subwaycoders.config.VideoConfigService
 import dev.suprex.subwaycoders.player.PlayerController
+import dev.suprex.subwaycoders.stats.WatchTimeTracker
 import dev.suprex.subwaycoders.youtube.extractVideoId
 import java.awt.BorderLayout
 import javax.swing.JComponent
@@ -43,6 +44,7 @@ class SubwayCodersPanel(
     private val config = SubwayCodersSettings.instance.configFor(windowId, defaultCategory)
     private val controller = PlayerController(config)
     private var lastVisible = true
+    private val watchKey = "${project.locationHash}/$windowId"
     private val fadeAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
 
     private var actionToolbar: ActionToolbar? = null
@@ -64,17 +66,13 @@ class SubwayCodersPanel(
                     object : ToolWindowManagerListener {
                         override fun stateChanged(manager: ToolWindowManager) {
                             val visible = manager.getToolWindow(windowId)?.isVisible == true
-                            if (visible == lastVisible) return
-                            lastVisible = visible
-                            controller.setPlaybackPaused(!visible)
-                            if (!visible) return
-                            fadeAlarm.cancelAllRequests()
-                            controller.fade(true, FADE_MS)
-                            ClaudeFocus.forget(project, windowId)
+                            if (visible != lastVisible) onVisibilityChanged(visible)
                         }
                     },
                 )
             controller.reload()
+            lastVisible = toolWindow()?.isVisible == true
+            WatchTimeTracker.instance.setWatching(watchKey, lastVisible)
         } else {
             add(controller.component, BorderLayout.CENTER)
         }
@@ -98,8 +96,23 @@ class SubwayCodersPanel(
 
     fun openConfig() = openConfigFile()
 
-    fun hideAnimated() {
+    private fun onVisibilityChanged(visible: Boolean) {
+        lastVisible = visible
+        controller.setPlaybackPaused(!visible)
+        WatchTimeTracker.instance.setWatching(watchKey, visible)
+        if (!visible) return
         fadeAlarm.cancelAllRequests()
+        controller.fade(true, FADE_MS)
+        ClaudeFocus.forget(project, windowId)
+    }
+
+    fun hideAnimated(banner: String) {
+        fadeAlarm.cancelAllRequests()
+        controller.showBanner(banner)
+        fadeAlarm.addRequest(::fadeOutAndHide, BANNER_MS)
+    }
+
+    private fun fadeOutAndHide() {
         controller.fade(false, FADE_MS)
         fadeAlarm.addRequest({ toolWindow()?.hide() }, FADE_MS)
     }
@@ -189,7 +202,7 @@ class SubwayCodersPanel(
         FileEditorManager.getInstance(project).openFile(file, true)
     }
 
-    override fun dispose() = Unit
+    override fun dispose() = WatchTimeTracker.instance.setWatching(watchKey, false)
 
     private inner class CategoryAction : ComboBoxAction() {
         override fun createPopupActionGroup(button: JComponent, dataContext: DataContext): DefaultActionGroup =
@@ -278,5 +291,6 @@ class SubwayCodersPanel(
 
         private const val TOOLBAR_PLACE = "SubwayCodersToolbar"
         private const val FADE_MS = 350
+        private const val BANNER_MS = 1200
     }
 }

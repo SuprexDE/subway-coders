@@ -58,6 +58,8 @@ class PlayerController(
 
     fun fade(visible: Boolean, durationMs: Int) = runScript(PlayerHtml.fadeScript(visible, durationMs))
 
+    fun showBanner(text: String) = runScript(PlayerHtml.bannerScript(text))
+
     private fun runScript(script: String) {
         val b = browser ?: return
         b.cefBrowser.executeJavaScript(script, b.cefBrowser.url ?: "", 0)

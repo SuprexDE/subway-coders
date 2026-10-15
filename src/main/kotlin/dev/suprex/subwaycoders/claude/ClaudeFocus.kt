@@ -28,7 +28,8 @@ object ClaudeFocus {
         }
         if (project.isDisposed) return
         when (type) {
-            "notification", "stop" -> collapse(project)
+            "notification" -> collapse(project, "Claude needs you")
+            "stop" -> collapse(project, "Claude is done")
             "prompt" -> expand(project)
         }
     }
@@ -37,13 +38,13 @@ object ClaudeFocus {
         project.getUserData(HIDDEN_BY_CLAUDE)?.remove(windowId)
     }
 
-    private fun collapse(project: Project) {
+    private fun collapse(project: Project, banner: String) {
         val twm = ToolWindowManager.getInstance(project)
         val hidden = hiddenSet(project)
         for (id in SubwayCodersToolWindowFactory.WINDOW_IDS) {
             val window = twm.getToolWindow(id)?.takeIf { it.isVisible } ?: continue
             hidden += id
-            panelOf(window)?.hideAnimated() ?: window.hide()
+            panelOf(window)?.hideAnimated(banner) ?: window.hide()
         }
         twm.getToolWindow(TERMINAL_ID)?.activate(null)
     }
