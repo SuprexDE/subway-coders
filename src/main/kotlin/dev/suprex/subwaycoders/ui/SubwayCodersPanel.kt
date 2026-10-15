@@ -9,12 +9,14 @@ import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -23,6 +25,7 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import dev.suprex.subwaycoders.config.SubwayCodersSettings
 import dev.suprex.subwaycoders.config.VideoConfigService
 import dev.suprex.subwaycoders.player.PlayerController
+import dev.suprex.subwaycoders.youtube.extractVideoId
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -118,7 +121,7 @@ class SubwayCodersPanel(
             "Play Video URL",
             null,
             config.customUrl,
-            null,
+            UrlValidator,
         ) ?: return
         config.customUrl = input.trim()
         config.doomscrollEnabled = false
@@ -159,7 +162,7 @@ class SubwayCodersPanel(
     override fun dispose() = Unit
 
     private inner class CategoryAction : ComboBoxAction() {
-        override fun createPopupActionGroup(button: JComponent): DefaultActionGroup =
+        override fun createPopupActionGroup(button: JComponent, dataContext: DataContext): DefaultActionGroup =
             DefaultActionGroup().apply {
                 for (name in categoryNames()) {
                     add(object : ToggleAction(name) {
@@ -208,6 +211,7 @@ class SubwayCodersPanel(
 
         override fun update(e: AnActionEvent) {
             e.presentation.isVisible = !config.doomscrollEnabled
+            e.presentation.isEnabled = !hasCustomUrl()
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -227,6 +231,15 @@ class SubwayCodersPanel(
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+    }
+
+    private object UrlValidator : InputValidator {
+        override fun checkInput(input: String?): Boolean {
+            val s = input?.trim().orEmpty()
+            return s.isEmpty() || extractVideoId(s) != null || s.startsWith("https://") || s.startsWith("http://")
+        }
+
+        override fun canClose(input: String?): Boolean = checkInput(input)
     }
 
     private companion object {
