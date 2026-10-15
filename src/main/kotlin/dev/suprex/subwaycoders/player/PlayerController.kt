@@ -62,11 +62,19 @@ class PlayerController(
     fun externalUrl(): String? =
         if (config.doomscrollEnabled) YOUTUBE_SHORTS_URL else currentClip?.let { watchOrDirect(it) }
 
+    fun reloadIfClipRemoved() {
+        if (config.doomscrollEnabled || config.customUrl.isNotBlank()) return
+        if (currentClip !in categoryClips()) reload()
+    }
+
+    private fun categoryClips(): List<String> =
+        VideoConfigService.instance.config.categories
+            .firstOrNull { it.name == config.categoryName }?.clips.orEmpty()
+
     private fun pickClip(): String? {
         val custom = config.customUrl.trim()
         if (custom.isNotEmpty()) return custom
-        val clips = VideoConfigService.instance.config.categories
-            .firstOrNull { it.name == config.categoryName }?.clips.orEmpty()
+        val clips = categoryClips()
         val candidates = clips.filter { it != currentClip }.ifEmpty { clips }
         return if (candidates.isEmpty()) null else candidates[Random.nextInt(candidates.size)]
     }

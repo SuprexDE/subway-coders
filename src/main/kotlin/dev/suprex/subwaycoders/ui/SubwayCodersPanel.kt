@@ -23,6 +23,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import dev.suprex.subwaycoders.config.SubwayCodersSettings
+import dev.suprex.subwaycoders.config.VideoConfigListener
 import dev.suprex.subwaycoders.config.VideoConfigService
 import dev.suprex.subwaycoders.player.PlayerController
 import dev.suprex.subwaycoders.youtube.extractVideoId
@@ -50,8 +51,9 @@ class SubwayCodersPanel(
             bar.isVisible = !config.controlsHidden
             add(bar, BorderLayout.NORTH)
             add(controller.component, BorderLayout.CENTER)
-            ApplicationManager.getApplication().messageBus.connect(this)
-                .subscribe(LafManagerListener.TOPIC, LafManagerListener { controller.reloadIfThemeFlipped() })
+            val appBus = ApplicationManager.getApplication().messageBus.connect(this)
+            appBus.subscribe(LafManagerListener.TOPIC, LafManagerListener { controller.reloadIfThemeFlipped() })
+            appBus.subscribe(VideoConfigListener.TOPIC, VideoConfigListener { onConfigChanged() })
             project.messageBus.connect(this)
                 .subscribe(
                     ToolWindowManagerListener.TOPIC,
@@ -111,6 +113,12 @@ class SubwayCodersPanel(
         VideoConfigService.instance.reload()
         ensureValidCategory()
         controller.reload()
+        actionToolbar?.updateActionsAsync()
+    }
+
+    private fun onConfigChanged() {
+        ensureValidCategory()
+        controller.reloadIfClipRemoved()
         actionToolbar?.updateActionsAsync()
     }
 
@@ -175,7 +183,7 @@ class SubwayCodersPanel(
                     })
                 }
                 addSeparator()
-                add(object : ToggleAction("Doomscroll (YouTube Shorts)", null, AllIcons.Actions.Download) {
+                add(object : ToggleAction("Doomscroll (YouTube Shorts)", null, AllIcons.Actions.MoveDown) {
                     override fun isSelected(e: AnActionEvent) = config.doomscrollEnabled
                     override fun setSelected(e: AnActionEvent, state: Boolean) = toggleDoomscroll(state)
                     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -197,6 +205,7 @@ class SubwayCodersPanel(
                 hasCustomUrl() -> "Custom URL"
                 else -> config.categoryName.ifEmpty { "Category" }
             }
+            e.presentation.description = config.customUrl.ifBlank { null }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
