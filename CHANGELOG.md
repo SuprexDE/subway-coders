@@ -1,6 +1,8 @@
 # Subway Coders Changelog
 
-## Unreleased
+## [Unreleased]
+
+## [1.3.0] - 2026-10-15
 
 ### Added
 
@@ -23,7 +25,7 @@
 - The Claude bridge retries the port on every project open instead of giving up after the first try.
 - Players fade out before being hidden on Claude Code events and fade back in when shown.
 
-## 1.2.0 - 2026-07-05
+## [1.2.0] - 2026-07-05
 
 ### Added
 
@@ -38,7 +40,7 @@
   uses Claude Code hooks that the plugin auto-installs into `~/.claude/settings.json` (removed again
   when you turn the feature off). On by default; toggle it via the tool window's options (gear) menu.
 
-## 1.1.0 - 2026-06-27
+## [1.1.0] - 2026-06-27
 
 ### Removed
 
@@ -50,7 +52,7 @@
   Category, Shuffle and Open-in-Browser.
 - Unknown fields in `categories.json` are now ignored instead of failing the whole config.
 
-## 1.0.0
+## [1.0.0]
 
 ### Added
 
@@ -59,3 +61,9 @@
 - Config-driven categories with multiple clips; "Shuffle" picks another and re-reads your config.
 - Play YouTube embeds or direct video URLs — paste any URL to override the category.
 - "Open in browser" action and a built-in config-file editor.
+
+[Unreleased]: https://github.com/SuprexDE/subway-coders/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/SuprexDE/subway-coders/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/SuprexDE/subway-coders/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/SuprexDE/subway-coders/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/SuprexDE/subway-coders/commits/v1.0.0
