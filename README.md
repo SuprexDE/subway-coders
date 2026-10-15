@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="branding/png/subway-coders-logo.png" alt="Subway Coders" width="520">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/png/subway-coders-logo-dark.png">
+    <img src="branding/png/subway-coders-logo.png" alt="Subway Coders" width="520">
+  </picture>
 </p>
 
 <p align="center">
