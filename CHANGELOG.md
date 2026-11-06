@@ -9,6 +9,9 @@
 - Startup crash (`NoClassDefFoundError: com/fasterxml/jackson/module/kotlin/ExtensionsKt`) on
   IntelliJ 2026.3, which no longer exposes its bundled Jackson Kotlin module to plugins. The plugin
   now ships its own Jackson.
+- Tool windows failing to open (`NoClassDefFoundError: com/intellij/ui/jcef/JBCefApp`) on
+  IntelliJ 2026.2, where JCEF became a separate bundled plugin. The plugin now declares its
+  dependency on it.
 
 ## [1.3.0] - 2026-10-15
 
